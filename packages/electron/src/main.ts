@@ -1,10 +1,16 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, Tray, Menu, nativeImage, globalShortcut } from 'electron';
 import * as path from 'path';
 
+let mainWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let isQuitting = false;
+
 function createWindow() {
-    const win = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
+        minWidth: 800,
+        minHeight: 600,
         titleBarStyle: 'hiddenInset',
         backgroundColor: '#0f172a', // Matches Slate-900
         webPreferences: {
@@ -17,22 +23,86 @@ function createWindow() {
 
     // In development, load from Vite dev server
     if (process.env.NODE_ENV === 'development') {
-        win.loadURL('http://localhost:3000');
-        win.webContents.openDevTools();
+        mainWindow.loadURL('http://localhost:3000');
+        mainWindow.webContents.openDevTools();
     } else {
-        // In production, load the built files
-        win.loadFile(path.join(__dirname, '../../app/dist/index.html'));
+        // In production, load the built files from the local app-dist folder
+        mainWindow.loadFile(path.join(__dirname, '../app-dist/index.html'));
     }
-}
 
-app.whenReady().then(() => {
-    createWindow();
-
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
+    mainWindow.on('close', (event) => {
+        if (!isQuitting) {
+            event.preventDefault();
+            mainWindow?.hide();
         }
     });
+
+    mainWindow.on('closed', () => {
+        mainWindow = null;
+    });
+}
+
+function createTray() {
+    // For now, use a simple colored square as a placeholder if no icon exists
+    const icon = nativeImage.createFromPath(path.join(__dirname, '../assets/tray-icon.png'));
+    tray = new Tray(icon.isEmpty() ? nativeImage.createFromDataURL('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gMREBEiJi7mMgAAACFJREFUSMftzDENAAAIA7BBEv40YwMv8NAnAdVbe7be9wMvV0YCB6E72mMAAAAASUVORK5CYII=') : icon);
+
+    const contextMenu = Menu.buildFromTemplate([
+        { label: 'Open Vault', click: () => mainWindow?.show() },
+        { label: 'Lock Vault', click: () => mainWindow?.webContents.send('vault-lock') },
+        { type: 'separator' },
+        {
+            label: 'Exit', click: () => {
+                isQuitting = true;
+                app.quit();
+            }
+        }
+    ]);
+
+    tray.setToolTip('EtherVault');
+    tray.setContextMenu(contextMenu);
+    tray.on('double-click', () => mainWindow?.show());
+}
+
+function registerShortcuts() {
+    globalShortcut.register('CommandOrControl+Shift+V', () => {
+        if (mainWindow?.isVisible()) {
+            mainWindow.hide();
+        } else {
+            mainWindow?.show();
+            mainWindow?.focus();
+        }
+    });
+}
+
+// Single Instance Lock
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+    app.quit();
+} else {
+    app.on('second-instance', () => {
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.show();
+            mainWindow.focus();
+        }
+    });
+
+    app.whenReady().then(() => {
+        createWindow();
+        createTray();
+        registerShortcuts();
+
+        app.on('activate', () => {
+            if (BrowserWindow.getAllWindows().length === 0) {
+                createWindow();
+            }
+        });
+    });
+}
+
+app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
 });
 
 app.on('window-all-closed', () => {

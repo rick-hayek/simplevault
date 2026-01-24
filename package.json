@@ -8,6 +8,7 @@
         "dev": "npm run dev -w @premium-password-manager/app",
         "dev:desktop": "NODE_ENV=development concurrently \"npm run dev -w @premium-password-manager/app\" \"wait-on http://localhost:3000 && npm run dev -w @premium-password-manager/electron\"",
         "build": "npm run build --workspaces",
+        "build:desktop": "npm run build && mkdir -p packages/electron/app-dist && cp -r packages/app/dist/* packages/electron/app-dist/ && npm run package -w @premium-password-manager/electron",
         "test": "npm run test --workspaces"
     },
     "devDependencies": {

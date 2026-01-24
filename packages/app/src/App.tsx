@@ -66,6 +66,15 @@ const App: React.FC = () => {
     initializeApp();
   }, []);
 
+  // Listen for native Electron events
+  useEffect(() => {
+    if ((window as any).electronAPI?.onVaultLock) {
+      (window as any).electronAPI.onVaultLock(() => {
+        handleLock();
+      });
+    }
+  }, []);
+
   // Auto-lock timer
   useEffect(() => {
     if (!isAuthenticated) return;
