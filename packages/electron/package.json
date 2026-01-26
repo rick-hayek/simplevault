@@ -7,13 +7,17 @@
     "main": "dist/main.js",
     "scripts": {
         "dev": "tsc && electron .",
-        "build": "tsc",
+        "build:preload": "esbuild src/preload.ts --bundle --platform=node --target=node18 --external:electron --outfile=dist/preload.js",
         "watch": "tsc -w",
-        "package": "npm run build && electron-builder"
+        "package": "npm run build && electron-builder",
+        "build": "npm run build:main && npm run dist",
+        "build:main": "tsc",
+        "dist": "electron-builder --mac"
     },
     "build": {
         "appId": "com.premium.passwordmanager",
         "productName": "EtherVault",
+        "icon": "assets/icon.png",
         "directories": {
             "output": "dist_electron"
         },
@@ -22,6 +26,7 @@
             "app-dist/**/*",
             "package.json"
         ],
+        "extends": null,
         "mac": {
             "category": "public.app-category.productivity",
             "target": [
@@ -45,9 +50,14 @@
             ]
         }
     },
+    "dependencies": {
+        "@premium-password-manager/core": "file:../core",
+        "libsodium-wrappers-sumo": "^0.8.1"
+    },
     "devDependencies": {
         "electron": "34.0.1",
         "electron-builder": "^26.4.0",
+        "esbuild": "^0.25.12",
         "typescript": "^5.0.0"
     }
 }

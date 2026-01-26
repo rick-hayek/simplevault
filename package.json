@@ -9,7 +9,10 @@
         "dev:desktop": "NODE_ENV=development concurrently \"npm run dev -w @premium-password-manager/app\" \"wait-on http://localhost:3000 && npm run dev -w @premium-password-manager/electron\"",
         "build": "npm run build --workspaces",
         "build:desktop": "npm run build && mkdir -p packages/electron/app-dist && cp -r packages/app/dist/* packages/electron/app-dist/ && npm run package -w @premium-password-manager/electron",
-        "test": "npm run test --workspaces"
+        "test": "npm run test --workspaces",
+        "build:app": "npm --workspace packages/app run build",
+        "build:electron": "npm --workspace packages/electron run build",
+        "dist:mac": "npm run build:app && npm run build:electron"
     },
     "devDependencies": {
         "concurrently": "^9.2.1",

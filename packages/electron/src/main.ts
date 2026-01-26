@@ -13,6 +13,7 @@ function createWindow() {
         minHeight: 600,
         titleBarStyle: 'hiddenInset',
         backgroundColor: '#0f172a', // Matches Slate-900
+        icon: path.join(__dirname, '../assets/icon.png'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -27,8 +28,16 @@ function createWindow() {
         mainWindow.webContents.openDevTools();
     } else {
         // In production, load the built files from the local app-dist folder
-        mainWindow.loadFile(path.join(__dirname, '../app-dist/index.html'));
+        const indexPath = path.join(__dirname, '../../app/dist/index.html');
+        mainWindow.loadFile(indexPath).catch(err => {
+            console.error('Failed to load production UI:', err);
+        });
     }
+
+    // Capture load failures
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+        console.error(`Window failed to load: ${errorDescription} (${errorCode})`);
+    });
 
     mainWindow.on('close', (event) => {
         if (!isQuitting) {
@@ -43,9 +52,9 @@ function createWindow() {
 }
 
 function createTray() {
-    // For now, use a simple colored square as a placeholder if no icon exists
-    const icon = nativeImage.createFromPath(path.join(__dirname, '../assets/tray-icon.png'));
-    tray = new Tray(icon.isEmpty() ? nativeImage.createFromDataURL('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gMREBEiJi7mMgAAACFJREFUSMftzDENAAAIA7BBEv40YwMv8NAnAdVbe7be9wMvV0YCB6E72mMAAAAASUVORK5CYII=') : icon);
+    // Use the official EtherVault tray icon
+    const iconPath = path.join(__dirname, '../assets/tray-icon.png');
+    tray = new Tray(nativeImage.createFromPath(iconPath));
 
     const contextMenu = Menu.buildFromTemplate([
         { label: 'Open Vault', click: () => mainWindow?.show() },
