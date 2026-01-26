@@ -12,8 +12,10 @@ import {
   Database,
   Lock,
   Globe,
-  Bell
+  Bell,
+  Languages
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { AppSettings, CloudProvider, AuthService } from '@premium-password-manager/core';
 
 interface SettingsViewProps {
@@ -22,6 +24,7 @@ interface SettingsViewProps {
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSettings }) => {
+  const { t, i18n } = useTranslation();
   const [isSyncing, setIsSyncing] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ old: '', new: '', confirm: '' });
@@ -48,7 +51,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
     setSuccess(false);
 
     if (passwordForm.new !== passwordForm.confirm) {
-      setError('New passwords do not match');
+      setError(t('settings.error.match'));
       return;
     }
 
@@ -62,10 +65,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
           setSuccess(false);
         }, 2000);
       } else {
-        setError('Incorrect original password');
+        setError(t('settings.error.incorrect'));
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to change password');
+      setError(err.message || t('settings.error.failed'));
     }
   };
 
@@ -82,7 +85,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
           <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${value ? 'right-0.5' : 'left-0.5'}`} />
         </button>
       ) : (
-        <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase">{value}</span>
+        <button onClick={onClick} disabled={!onClick} className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase disabled:cursor-default">
+          {value}
+        </button>
       )}
     </div>
   );
@@ -91,8 +96,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
     <div className="space-y-4 pb-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Settings</h1>
-          <p className="hidden md:block text-slate-500 dark:text-slate-400 text-xs mt-0.5">Manage your security and synchronization preferences.</p>
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('settings.title')}</h1>
+          <p className="hidden md:block text-slate-500 dark:text-slate-400 text-xs mt-0.5">{t('settings.subtitle')}</p>
         </div>
         <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] border border-slate-200 dark:border-slate-800 px-2 py-1 rounded-lg">VER 2.6.0</div>
       </div>
@@ -101,7 +106,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
         {/* Cloud Config - Tighter */}
         <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Sync Provider</h2>
+            <h2 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">{t('settings.sync_provider')}</h2>
             {settings.lastSync && <span className="text-[8px] text-emerald-500 font-bold uppercase">{settings.lastSync}</span>}
           </div>
 
@@ -133,19 +138,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
             className="w-full py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-bold rounded-xl active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-2"
           >
             <RefreshCcw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? 'UPDATING...' : 'FORCE SYNC'}
+            {isSyncing ? t('settings.updating') : t('settings.force_sync')}
           </button>
         </div>
 
         {/* Access Settings - High Density Grid */}
         <div className="lg:col-span-7 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <CompactSetting icon={Fingerprint} label="Biometric ID" value={settings.biometricsEnabled} onClick={toggleBiometrics} />
-            <CompactSetting icon={Shield} label="2FA Protection" value={settings.twoFactorEnabled} />
-            <CompactSetting icon={Clock} label="Lock Timer" value={`${settings.autoLockTimeout} MINS`} type="value" />
-            <CompactSetting icon={Bell} label="Login Alerts" value={true} />
-            <CompactSetting icon={Moon} label="Dark Mode" value={settings.theme === 'dark'} onClick={() => setSettings({ ...settings, theme: settings.theme === 'dark' ? 'light' : 'dark' })} />
-            <CompactSetting icon={Lock} label="Master Log" value="ENABLED" type="value" />
+            <CompactSetting icon={Fingerprint} label={t('settings.option.biometric')} value={settings.biometricsEnabled} onClick={toggleBiometrics} />
+            <CompactSetting icon={Shield} label={t('settings.option.2fa')} value={settings.twoFactorEnabled} />
+            <CompactSetting icon={Clock} label={t('settings.option.lock_timer')} value={`${settings.autoLockTimeout} MINS`} type="value" />
+            <CompactSetting icon={Bell} label={t('settings.option.login_alerts')} value={true} />
+            <CompactSetting icon={Moon} label={t('settings.option.dark_mode')} value={settings.theme === 'dark'} onClick={() => setSettings({ ...settings, theme: settings.theme === 'dark' ? 'light' : 'dark' })} />
+            <CompactSetting icon={Languages} label={t('settings.option.language')} value={i18n.language === 'zh' ? '中文' : 'ENGLISH'} type="value" onClick={() => i18n.changeLanguage(i18n.language === 'zh' ? 'en' : 'zh')} />
+            <CompactSetting icon={Lock} label={t('settings.option.master_log')} value="ENABLED" type="value" />
           </div>
 
           <button
@@ -153,7 +159,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
             className="w-full py-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[11px] font-black rounded-2xl hover:bg-indigo-100 transition-all flex items-center justify-center gap-2"
           >
             <Shield className="w-4 h-4" />
-            CHANGE MASTER PASSWORD
+            {t('settings.change_password')}
           </button>
         </div>
       </div>
@@ -161,10 +167,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
       {isPasswordModalOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-8 animate-in zoom-in-95 duration-200">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Change Master Password</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">{t('settings.password_modal.title')}</h2>
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Current Password</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{t('settings.password_modal.current')}</label>
                 <input
                   type="password"
                   required
@@ -174,7 +180,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                 />
               </div>
               <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">New Password</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{t('settings.password_modal.new')}</label>
                 <input
                   type="password"
                   required
@@ -184,7 +190,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">Confirm New Password</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{t('settings.password_modal.confirm')}</label>
                 <input
                   type="password"
                   required
@@ -195,7 +201,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
               </div>
 
               {error && <p className="text-rose-500 text-[10px] font-bold uppercase text-center pt-2">{error}</p>}
-              {success && <p className="text-emerald-500 text-[10px] font-bold uppercase text-center pt-2">Password updated successfully!</p>}
+              {success && <p className="text-emerald-500 text-[10px] font-bold uppercase text-center pt-2">{t('settings.success.password')}</p>}
 
               <div className="flex gap-3 pt-6">
                 <button
@@ -203,13 +209,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                   onClick={() => { setIsPasswordModalOpen(false); setError(null); }}
                   className="flex-1 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
                 >
-                  Cancel
+                  {t('settings.password_modal.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-black rounded-xl hover:opacity-90 transition-all"
                 >
-                  Save Changes
+                  {t('settings.password_modal.save')}
                 </button>
               </div>
             </form>
@@ -219,10 +225,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
 
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-900">
         <div className="flex items-center gap-4">
-          <button className="text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors">Export Vault</button>
-          <button className="text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors">Clear Cache</button>
+          <button className="text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors">{t('settings.export')}</button>
+          <button className="text-[9px] font-bold text-slate-400 uppercase tracking-widest hover:text-rose-500 transition-colors">{t('settings.clear_cache')}</button>
         </div>
-        <span className="text-[8px] font-black text-slate-300 dark:text-slate-800 uppercase tracking-[0.5em]">AES-256 Bit Encryption</span>
+        <span className="text-[8px] font-black text-slate-300 dark:text-slate-800 uppercase tracking-[0.5em]">{t('settings.encryption')}</span>
       </div>
     </div>
   );

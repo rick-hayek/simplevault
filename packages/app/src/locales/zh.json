@@ -1,8 +1,109 @@
 {
-    "welcome": "欢迎使用 EtherVault",
-    "setup": "设置主密码",
-    "dashboard": "仪表盘",
-    "vault": "密码库",
-    "settings": "设置",
-    "generator": "生成器"
+    "layout": {
+        "nav": {
+            "vault": "密码库",
+            "security": "安全",
+            "generator": "生成器",
+            "settings": "设置"
+        },
+        "appearance": "外观",
+        "lock_vault": "锁定库",
+        "search_placeholder": "搜索..."
+    },
+    "vault": {
+        "title": "您的密码库",
+        "subtitle": "使用工业级安全标准管理您的凭据。",
+        "add": "添加凭据",
+        "search": "搜索...",
+        "update": "更新凭据",
+        "save": "保存凭据",
+        "edit_credential": "编辑凭据",
+        "new_credential": "新建凭据",
+        "entry": {
+            "username": "用户名",
+            "title": "标题",
+            "category": "分类",
+            "website": "网站地址",
+            "username_email": "用户名 / 邮箱",
+            "password": "密码",
+            "title_placeholder": "Google, Netflix...",
+            "website_placeholder": "example.com",
+            "username_placeholder": "用户名或邮箱",
+            "password_placeholder": "输入密码"
+        }
+    },
+    "category": {
+        "all": "全部",
+        "personal": "个人",
+        "work": "工作",
+        "others": "其他"
+    },
+    "settings": {
+        "title": "设置",
+        "subtitle": "管理您的安全和同步偏好。",
+        "sync_provider": "同步提供商",
+        "updating": "更新中...",
+        "force_sync": "强制同步",
+        "option": {
+            "biometric": "生物识别",
+            "2fa": "双重验证",
+            "lock_timer": "锁定计时",
+            "login_alerts": "登录提醒",
+            "dark_mode": "深色模式",
+            "language": "语言",
+            "master_log": "主日志"
+        },
+        "change_password": "修改主密码",
+        "export": "导出密码库",
+        "clear_cache": "清除缓存",
+        "encryption": "AES-256 位加密",
+        "password_modal": {
+            "title": "修改主密码",
+            "current": "当前密码",
+            "new": "新密码",
+            "confirm": "确认新密码",
+            "cancel": "取消",
+            "save": "保存更改"
+        },
+        "error": {
+            "match": "新密码不匹配",
+            "incorrect": "原密码错误",
+            "failed": "修改密码失败"
+        },
+        "success": {
+            "password": "密码更新成功！"
+        }
+    },
+    "login": {
+        "locked_local_db": "已锁定本地数据库",
+        "master_password": "主密码",
+        "unlock_placeholder": "输入密钥解锁",
+        "invalid_key": "无效的访问密钥",
+        "access_vault": "进入密码库",
+        "secure_id": "安全 ID",
+        "system_auth": "系统验证...",
+        "unlock_bio": "使用生物识别解锁"
+    },
+    "welcome": {
+        "step1": {
+            "title": "保护您的密码库",
+            "subtitle": "创建一个主密钥以在本地加密您的数据。"
+        },
+        "step2": {
+            "title": "快速访问",
+            "subtitle": "安全地加速您的登录体验。"
+        },
+        "master_key": "主密钥",
+        "verify_key": "验证密钥",
+        "key_placeholder": "输入强密钥",
+        "repeat_placeholder": "重复主密钥",
+        "biometric": "生物识别锁定",
+        "biometric_subtitle": "Face ID / Touch ID",
+        "next": "下一步",
+        "start": "开始使用",
+        "error": {
+            "length": "主密钥必须至少 8 个字符。",
+            "match": "密钥不匹配。"
+        }
+    }
 }

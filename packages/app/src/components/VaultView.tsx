@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Search, Plus, MoreVertical, ExternalLink, Copy, Check, Tag as TagIcon, X, Globe, User as UserIcon, Lock, Eye, EyeOff, Trash2, Edit2, ChevronRight } from 'lucide-react';
 import { PasswordEntry, Category, SecurityService } from '@premium-password-manager/core';
+import { useTranslation } from 'react-i18next';
 import { CATEGORIES } from '../constants';
 
 interface VaultViewProps {
@@ -27,6 +28,7 @@ export const VaultView: React.FC<VaultViewProps> = ({
   onEdit,
   onAdd
 }) => {
+  const { t } = useTranslation();
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const handleCopy = (id: string, text: string) => {
@@ -61,15 +63,15 @@ export const VaultView: React.FC<VaultViewProps> = ({
       {/* Header section - Hidden on mobile */}
       <div className="hidden md:flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Your Vault</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-0.5 text-xs">Manage your credentials with industry-grade security.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('vault.title')}</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-0.5 text-xs">{t('vault.subtitle')}</p>
         </div>
         <button
           onClick={onAdd}
           className="flex items-center justify-center gap-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:opacity-90 active:scale-95 transition-all"
         >
           <Plus className="w-4 h-4" />
-          ADD CREDENTIAL
+          {t('vault.add')}
         </button>
       </div>
 
@@ -80,7 +82,7 @@ export const VaultView: React.FC<VaultViewProps> = ({
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={t('vault.search')}
               onChange={(e) => onSearch(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl py-2 pl-10 pr-4 outline-none focus:border-indigo-500 transition-all text-sm"
             />
@@ -96,7 +98,7 @@ export const VaultView: React.FC<VaultViewProps> = ({
                   : 'bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-slate-800 hover:border-slate-200'
                   }`}
               >
-                {cat}
+                {t(`category.${cat.toLowerCase()}`)}
               </button>
             ))}
           </div>
@@ -114,7 +116,7 @@ export const VaultView: React.FC<VaultViewProps> = ({
               : 'bg-white dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'
               }`}
           >
-            {cat}
+            {t(`category.${cat.toLowerCase()}`)}
           </button>
         ))}
       </div>
@@ -149,7 +151,7 @@ export const VaultView: React.FC<VaultViewProps> = ({
               <div className="space-y-3">
                 <div className="p-2.5 bg-slate-50/50 dark:bg-slate-800/30 rounded-xl flex items-center justify-between group/row border border-slate-100/50 dark:border-slate-700/50">
                   <div className="truncate pr-2">
-                    <span className="block text-[8px] uppercase font-bold text-slate-400 mb-0.5 tracking-widest">Username</span>
+                    <span className="block text-[8px] uppercase font-bold text-slate-400 mb-0.5 tracking-widest">{t('vault.entry.username')}</span>
                     <span className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate block">{entry.username}</span>
                   </div>
                   <button
@@ -204,6 +206,7 @@ interface EntryModalProps {
 
 // Added EntryModal component to fix import error in App.tsx
 export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, onDelete }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<Partial<PasswordEntry>>(
     entry || {
       title: '',
@@ -236,7 +239,7 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
             <div className="p-2 bg-slate-900 dark:bg-white rounded-xl">
               <Lock className="w-5 h-5 text-white dark:text-slate-900" />
             </div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{entry ? 'Edit Credential' : 'New Credential'}</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{entry ? t('vault.edit_credential') : t('vault.new_credential')}</h2>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
             <X className="w-6 h-6" />
@@ -246,42 +249,42 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
         <form onSubmit={handleSubmit} className="p-8 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Title</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">{t('vault.entry.title')}</label>
               <input
                 required
                 value={formData.title}
                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 outline-none focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white font-medium"
-                placeholder="Google, Netflix..."
+                placeholder={t('vault.entry.title_placeholder')}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Category</label>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">{t('vault.entry.category')}</label>
               <select
                 value={formData.category}
                 onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 outline-none focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white font-medium"
               >
-                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {CATEGORIES.map(c => <option key={c} value={c}>{t(`category.${c.toLowerCase()}`)}</option>)}
               </select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Website URL</label>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">{t('vault.entry.website')}</label>
             <div className="relative">
               <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 value={formData.website}
                 onChange={e => setFormData({ ...formData, website: e.target.value })}
                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white font-medium"
-                placeholder="example.com"
+                placeholder={t('vault.entry.website_placeholder')}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Username / Email</label>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">{t('vault.entry.username_email')}</label>
             <div className="relative">
               <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -289,13 +292,13 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
                 value={formData.username}
                 onChange={e => setFormData({ ...formData, username: e.target.value })}
                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white font-medium"
-                placeholder="username or email"
+                placeholder={t('vault.entry.username_placeholder')}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Password</label>
+            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">{t('vault.entry.password')}</label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -303,7 +306,7 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
                 value={formData.password}
                 onChange={e => setFormData({ ...formData, password: e.target.value })}
                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white font-mono"
-                placeholder="Enter password"
+                placeholder={t('vault.entry.password_placeholder')}
               />
             </div>
           </div>
@@ -322,7 +325,7 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
               type="submit"
               className="flex-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-xl font-bold shadow-lg hover:opacity-90 active:scale-[0.98] transition-all"
             >
-              {entry ? 'UPDATE CREDENTIAL' : 'SAVE CREDENTIAL'}
+              {entry ? t('vault.update') : t('vault.save')}
             </button>
           </div>
         </form>

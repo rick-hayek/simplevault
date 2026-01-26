@@ -1,7 +1,7 @@
 
 import { PasswordEntry, Category } from '@premium-password-manager/core';
 
-export const CATEGORIES: Category[] = ['All', 'Personal', 'Work', 'Others', 'Logins', 'Secure Notes', 'Credit Cards', 'Identities'];
+export const CATEGORIES: Category[] = ['All', 'Personal', 'Work', 'Others'];
 
 export const MOCK_PASSWORDS: PasswordEntry[] = [
   {

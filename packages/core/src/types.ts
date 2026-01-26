@@ -16,7 +16,7 @@ export interface PasswordEntry {
     favorite: boolean;
 }
 
-export type Category = 'Logins' | 'Secure Notes' | 'Credit Cards' | 'Identities' | 'All' | 'Personal' | 'Work' | 'Others';
+export type Category = 'All' | 'Personal' | 'Work' | 'Others';
 
 export type CloudProvider = 'none' | 'dropbox' | 'google' | 'drive' | 'webdav' | 'icloud' | 'onedrive';
 

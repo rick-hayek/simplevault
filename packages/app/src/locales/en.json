@@ -1,8 +1,109 @@
 {
-    "welcome": "Welcome to EtherVault",
-    "setup": "Setup Master Password",
-    "dashboard": "Dashboard",
-    "vault": "Vault",
-    "settings": "Settings",
-    "generator": "Generator"
+    "layout": {
+        "nav": {
+            "vault": "Vault",
+            "security": "Security",
+            "generator": "Generator",
+            "settings": "Settings"
+        },
+        "appearance": "Appearance",
+        "lock_vault": "Lock Vault",
+        "search_placeholder": "Search..."
+    },
+    "vault": {
+        "title": "Your Vault",
+        "subtitle": "Manage your credentials with industry-grade security.",
+        "add": "ADD CREDENTIAL",
+        "search": "Search...",
+        "update": "UPDATE CREDENTIAL",
+        "save": "SAVE CREDENTIAL",
+        "edit_credential": "Edit Credential",
+        "new_credential": "New Credential",
+        "entry": {
+            "username": "Username",
+            "title": "Title",
+            "category": "Category",
+            "website": "Website URL",
+            "username_email": "Username / Email",
+            "password": "Password",
+            "title_placeholder": "Google, Netflix...",
+            "website_placeholder": "example.com",
+            "username_placeholder": "username or email",
+            "password_placeholder": "Enter password"
+        }
+    },
+    "category": {
+        "all": "ALL",
+        "personal": "PERSONAL",
+        "work": "WORK",
+        "others": "OTHERS"
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Manage your security and synchronization preferences.",
+        "sync_provider": "Sync Provider",
+        "updating": "UPDATING...",
+        "force_sync": "FORCE SYNC",
+        "option": {
+            "biometric": "Biometric ID",
+            "2fa": "2FA Protection",
+            "lock_timer": "Lock Timer",
+            "login_alerts": "Login Alerts",
+            "dark_mode": "Dark Mode",
+            "language": "Language",
+            "master_log": "Master Log"
+        },
+        "change_password": "CHANGE MASTER PASSWORD",
+        "export": "Export Vault",
+        "clear_cache": "Clear Cache",
+        "encryption": "AES-256 Bit Encryption",
+        "password_modal": {
+            "title": "Change Master Password",
+            "current": "Current Password",
+            "new": "New Password",
+            "confirm": "Confirm New Password",
+            "cancel": "Cancel",
+            "save": "Save Changes"
+        },
+        "error": {
+            "match": "New passwords do not match",
+            "incorrect": "Incorrect original password",
+            "failed": "Failed to change password"
+        },
+        "success": {
+            "password": "Password updated successfully!"
+        }
+    },
+    "login": {
+        "locked_local_db": "Locked Local Database",
+        "master_password": "Master Password",
+        "unlock_placeholder": "Enter key to unlock",
+        "invalid_key": "Invalid Access Key",
+        "access_vault": "Access Vault",
+        "secure_id": "SECURE ID",
+        "system_auth": "SYSTEM AUTH...",
+        "unlock_bio": "Unlock with Bio ID"
+    },
+    "welcome": {
+        "step1": {
+            "title": "Secure Your Vault",
+            "subtitle": "Create a master key to encrypt your data locally."
+        },
+        "step2": {
+            "title": "Quick Access",
+            "subtitle": "Speed up your login experience securely."
+        },
+        "master_key": "Master Key",
+        "verify_key": "Verify Key",
+        "key_placeholder": "Enter strong key",
+        "repeat_placeholder": "Repeat master key",
+        "biometric": "Biometric Lock",
+        "biometric_subtitle": "Face ID / Touch ID",
+        "next": "Next Step",
+        "start": "Get Started",
+        "error": {
+            "length": "Master Key must be at least 8 characters.",
+            "match": "Keys do not match."
+        }
+    }
 }

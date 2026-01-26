@@ -4,6 +4,11 @@ import { initReactI18next } from 'react-i18next';
 import en from './locales/en.json';
 import zh from './locales/zh.json';
 
+const getSystemLanguage = () => {
+    const language = navigator.language.toLowerCase();
+    return language.startsWith('zh') ? 'zh' : 'en';
+};
+
 i18n
     .use(initReactI18next)
     .init({
@@ -11,7 +16,7 @@ i18n
             en: { translation: en },
             zh: { translation: zh }
         },
-        lng: 'en', // default language
+        lng: getSystemLanguage(),
         fallbackLng: 'en',
         interpolation: {
             escapeValue: false

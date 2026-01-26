@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { 
-  ShieldCheck, 
-  Lock, 
-  KeyRound, 
-  Settings, 
+import {
+  ShieldCheck,
+  Lock,
+  KeyRound,
+  Settings,
   X,
   Moon,
   Sun,
@@ -14,6 +14,7 @@ import {
   MoreVertical,
   ArrowLeft
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -27,17 +28,18 @@ interface LayoutProps {
   onAddClick?: () => void;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ 
-  children, 
-  currentView, 
-  setView, 
-  isDarkMode, 
+export const Layout: React.FC<LayoutProps> = ({
+  children,
+  currentView,
+  setView,
+  isDarkMode,
   toggleDarkMode,
   onLock,
   onSearch,
   searchQuery = '',
   onAddClick
 }) => {
+  const { t } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isSearchMode, setIsSearchMode] = useState(false);
 
@@ -47,31 +49,31 @@ export const Layout: React.FC<LayoutProps> = ({
   }, [currentView]);
 
   const navItems = [
-    { 
-      id: 'vault', 
-      label: 'Vault', 
-      icon: Lock, 
+    {
+      id: 'vault',
+      label: t('layout.nav.vault'),
+      icon: Lock,
       activeClass: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400',
       ringClass: 'ring-indigo-500/20'
     },
-    { 
-      id: 'security', 
-      label: 'Security', 
-      icon: ShieldCheck, 
+    {
+      id: 'security',
+      label: t('layout.nav.security'),
+      icon: ShieldCheck,
       activeClass: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
       ringClass: 'ring-emerald-500/20'
     },
-    { 
-      id: 'generator', 
-      label: 'Generator', 
-      icon: KeyRound, 
+    {
+      id: 'generator',
+      label: t('layout.nav.generator'),
+      icon: KeyRound,
       activeClass: 'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400',
       ringClass: 'ring-violet-500/20'
     },
-    { 
-      id: 'settings', 
-      label: 'Settings', 
-      icon: Settings, 
+    {
+      id: 'settings',
+      label: t('layout.nav.settings'),
+      icon: Settings,
       activeClass: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400',
       ringClass: 'ring-amber-500/20'
     },
@@ -95,11 +97,10 @@ export const Layout: React.FC<LayoutProps> = ({
             <button
               key={item.id}
               onClick={() => setView(item.id)}
-              className={`w-full flex items-center justify-start gap-3 px-3 py-3 rounded-xl transition-all duration-300 group ${
-                currentView === item.id 
-                  ? `${item.activeClass} font-semibold shadow-sm ring-1 ${item.ringClass}` 
-                  : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
-              }`}
+              className={`w-full flex items-center justify-start gap-3 px-3 py-3 rounded-xl transition-all duration-300 group ${currentView === item.id
+                ? `${item.activeClass} font-semibold shadow-sm ring-1 ${item.ringClass}`
+                : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                }`}
             >
               <item.icon className={`w-5 h-5 shrink-0 transition-transform duration-300 ${currentView === item.id ? 'scale-110' : 'group-hover:scale-110'}`} />
               <span className="md:block truncate text-sm">{item.label}</span>
@@ -108,22 +109,22 @@ export const Layout: React.FC<LayoutProps> = ({
         </nav>
 
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 space-y-1">
-          <button 
+          <button
             onClick={toggleDarkMode}
             className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group"
           >
             <div className="flex items-center gap-3">
               {isDarkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-600" />}
-              <span className="md:block text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Appearance</span>
+              <span className="md:block text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">{t('layout.appearance')}</span>
             </div>
           </button>
-          
-          <button 
+
+          <button
             onClick={onLock}
             className="w-full flex items-center justify-start gap-3 px-3 py-3 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors"
           >
             <LogOut className="w-5 h-5 shrink-0" />
-            <span className="md:block text-[10px] font-bold uppercase tracking-wider">Lock Vault</span>
+            <span className="md:block text-[10px] font-bold uppercase tracking-wider">{t('layout.lock_vault')}</span>
           </button>
         </div>
       </aside>
@@ -134,9 +135,9 @@ export const Layout: React.FC<LayoutProps> = ({
           <div className="flex items-center w-full gap-2 animate-in slide-in-from-right-2 duration-200">
             <button onClick={() => { setIsSearchMode(false); onSearch?.(''); }} className="p-2 text-slate-900 dark:text-white"><ArrowLeft className="w-5 h-5" /></button>
             <div className="flex-1 relative">
-              <input 
+              <input
                 type="text" autoFocus value={searchQuery} onChange={(e) => onSearch?.(e.target.value)}
-                placeholder="Search..."
+                placeholder={t('layout.search_placeholder')}
                 className="w-full bg-slate-100 dark:bg-slate-900 rounded-lg py-1.5 pl-3 pr-8 outline-none text-xs text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800"
               />
             </div>
@@ -180,9 +181,8 @@ export const Layout: React.FC<LayoutProps> = ({
               <button
                 key={item.id}
                 onClick={() => { setView(item.id); setIsMobileMenuOpen(false); }}
-                className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
-                  currentView === item.id ? item.activeClass : 'text-slate-500 dark:text-slate-400'
-                }`}
+                className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${currentView === item.id ? item.activeClass : 'text-slate-500 dark:text-slate-400'
+                  }`}
               >
                 <item.icon className="w-5 h-5" />
                 <span className="font-bold text-sm">{item.label}</span>
@@ -190,15 +190,15 @@ export const Layout: React.FC<LayoutProps> = ({
             ))}
           </nav>
           <div className="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-2">
-             <button onClick={toggleDarkMode} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900">
+            <button onClick={toggleDarkMode} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900">
               <div className="flex items-center gap-3">
                 {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
-                <span className="text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-widest">Appearance</span>
+                <span className="text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-widest">{t('layout.appearance')}</span>
               </div>
             </button>
             <button onClick={() => { onLock?.(); setIsMobileMenuOpen(false); }} className="w-full flex items-center gap-3 p-3 text-rose-500 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10">
               <LogOut className="w-4 h-4" />
-              <span className="font-bold text-xs uppercase tracking-widest">Lock Vault</span>
+              <span className="font-bold text-xs uppercase tracking-widest">{t('layout.lock_vault')}</span>
             </button>
           </div>
         </div>
