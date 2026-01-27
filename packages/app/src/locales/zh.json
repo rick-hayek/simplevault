@@ -52,7 +52,21 @@
             "dark_mode": "深色模式",
             "language": "语言",
             "master_log": "主日志",
-            "open_log": "打开日志"
+            "open_log": "打开日志",
+            "time": {
+                "1m": "1 分钟",
+                "5m": "5 分钟",
+                "15m": "15 分钟",
+                "30m": "30 分钟",
+                "1h": "1 小时"
+            },
+            "recent_activity": "近期活动"
+        },
+        "activity_modal": {
+            "title": "系统日志",
+            "empty": "暂无近期活动。",
+            "refresh": "刷新",
+            "close": "关闭"
         },
         "change_password": "修改主密码",
         "encryption": "AES-256 位加密",

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { logger } from '../utils/logger';
 import {
   Fingerprint,
@@ -15,7 +15,9 @@ import {
   Globe,
   Bell,
   Languages,
-  FileText
+  FileText,
+  Activity,
+  X
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AppSettings, CloudProvider, AuthService, VaultService } from '@premium-password-manager/core';
@@ -37,6 +39,21 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
   const [passwordForm, setPasswordForm] = useState({ old: '', new: '', confirm: '' });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+  const [activityLogs, setActivityLogs] = useState<string[]>([]);
+
+  const fetchLogs = async () => {
+    if (logger.getRecentLogs) {
+      const logs = await logger.getRecentLogs();
+      setActivityLogs(logs);
+    }
+  };
+
+  useEffect(() => {
+    if (isActivityModalOpen) {
+      fetchLogs();
+    }
+  }, [isActivityModalOpen]);
 
   // Wrapper to fetch entries for export
   const ExportModalWrapper = ({ onClose }: { onClose: () => void }) => {
@@ -238,8 +255,41 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <CompactSetting icon={Fingerprint} label={t('settings.option.biometric')} value={settings.biometricsEnabled} onClick={toggleBiometrics} />
             <CompactSetting icon={Shield} label={t('settings.option.2fa')} value={settings.twoFactorEnabled} />
-            <CompactSetting icon={Clock} label={t('settings.option.lock_timer')} value={`${settings.autoLockTimeout} MINS`} type="value" />
-            <CompactSetting icon={Bell} label={t('settings.option.login_alerts')} value={true} />
+            {/* Lock Timer Dropdown */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl flex items-center justify-between group">
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400 group-hover:text-indigo-500 transition-colors">
+                  <Clock className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 tracking-tight">{t('settings.option.lock_timer')}</span>
+              </div>
+              <select
+                value={settings.autoLockTimeout}
+                onChange={(e) => setSettings({ ...settings, autoLockTimeout: Number(e.target.value) })}
+                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase rounded-lg py-1 px-2 outline-none focus:border-indigo-500 transition-all cursor-pointer"
+              >
+                {[1, 5, 15, 30, 60].map(val => (
+                  <option key={val} value={val}>
+                    {val === 60 ? t('settings.option.time.1h') : t(`settings.option.time.${val}m`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Recent Activity Button */}
+            <div
+              onClick={() => setIsActivityModalOpen(true)}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl flex items-center justify-between group cursor-pointer hover:border-indigo-500/50 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400 group-hover:text-indigo-500 transition-colors">
+                  <Activity className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 tracking-tight">{t('settings.option.recent_activity')}</span>
+              </div>
+              <div className="p-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+              </div>
+            </div>
             <CompactSetting icon={Moon} label={t('settings.option.dark_mode')} value={settings.theme === 'dark'} onClick={() => setSettings({ ...settings, theme: settings.theme === 'dark' ? 'light' : 'dark' })} />
             <CompactSetting icon={Languages} label={t('settings.option.language')} value={i18n.language === 'zh' ? '中文' : 'ENGLISH'} type="value" onClick={() => i18n.changeLanguage(i18n.language === 'zh' ? 'en' : 'zh')} />
 
@@ -379,6 +429,73 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
             onDataChange();
           }}
         />
+      )}
+      {isActivityModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setIsActivityModalOpen(false)}>
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl h-[600px] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-50 dark:bg-slate-800 rounded-xl text-indigo-500">
+                  <Activity className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('settings.activity_modal.title')}</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">~/Library/Logs/EtherVault/main.log</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchLogs}
+                  className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                  title={t('settings.activity_modal.refresh')}
+                >
+                  <RefreshCcw className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setIsActivityModalOpen(false)}
+                  className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-auto p-6 bg-slate-50 dark:bg-slate-950 font-mono text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 space-y-1">
+              {activityLogs.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                  <Activity className="w-12 h-12 mb-4 opacity-20" />
+                  <p>{t('settings.activity_modal.empty')}</p>
+                </div>
+              ) : (
+                activityLogs.map((log, index) => {
+                  let colorClass = "text-slate-600 dark:text-slate-400";
+                  if (log.includes('[error]') || log.includes('error:')) colorClass = "text-rose-500";
+                  if (log.includes('[warn]') || log.includes('warn:')) colorClass = "text-amber-500";
+                  if (log.includes('[info]') || log.includes('info:')) colorClass = "text-emerald-600 dark:text-emerald-400";
+
+                  // Highlight our custom tags
+                  const highlightedLog = log.replace(/(\[AUTH\]|\[VAULT\]|\[DATA\])/g, '<span class="font-bold text-indigo-500">$1</span>');
+
+                  return (
+                    <div key={index} className={`flex gap-3 border-b border-slate-200/50 dark:border-slate-800/50 pb-1 ${colorClass}`}>
+                      <span className="opacity-50 select-none w-6 text-right">{index + 1}</span>
+                      <span className="break-all" dangerouslySetInnerHTML={{ __html: highlightedLog }} />
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-end">
+              <button
+                onClick={() => setIsActivityModalOpen(false)}
+                className="px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold rounded-xl hover:opacity-90 transition-all uppercase tracking-wider"
+              >
+                {t('settings.activity_modal.close')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

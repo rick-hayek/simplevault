@@ -182,7 +182,23 @@ ipcMain.on('log-set-enabled', (event, enabled: boolean) => {
 // Import shell efficiently or reuse if already imported
 // import { shell } from 'electron';
 
+import * as fs from 'fs';
+
 ipcMain.on('log-open', () => {
     const logPath = log.transports.file.getFile().path;
     shell.showItemInFolder(logPath);
+});
+
+ipcMain.handle('log-read-recent', async () => {
+    try {
+        const logPath = log.transports.file.getFile().path;
+        if (!fs.existsSync(logPath)) return [];
+
+        const content = await fs.promises.readFile(logPath, 'utf8');
+        const lines = content.split('\n').filter(line => line.trim() !== '');
+        return lines.slice(-50).reverse(); // Return last 50 lines, newest first
+    } catch (error) {
+        log.error('Failed to read log file:', error);
+        return [];
+    }
 });

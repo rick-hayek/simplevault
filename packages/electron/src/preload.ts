@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         error: (...args: any[]) => ipcRenderer.send('log-message', 'error', ...args),
         setEnabled: (enabled: boolean) => ipcRenderer.send('log-set-enabled', enabled),
         openLogFile: () => ipcRenderer.send('log-open'),
+        getRecentLogs: () => ipcRenderer.invoke('log-read-recent'),
     }
 });
 

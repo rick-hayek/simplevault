@@ -52,7 +52,21 @@
             "dark_mode": "Dark Mode",
             "language": "Language",
             "master_log": "Master Log",
-            "open_log": "Open Log"
+            "open_log": "Open Log",
+            "time": {
+                "1m": "1 MIN",
+                "5m": "5 MINS",
+                "15m": "15 MINS",
+                "30m": "30 MINS",
+                "1h": "1 HR"
+            },
+            "recent_activity": "Recent Activity"
+        },
+        "activity_modal": {
+            "title": "System Log",
+            "empty": "No recent activity found.",
+            "refresh": "Refresh",
+            "close": "Close"
         },
         "change_password": "CHANGE MASTER PASSWORD",
         "encryption": "AES-256 Bit Encryption",

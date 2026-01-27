@@ -8,6 +8,7 @@ declare global {
                 error: (...args: any[]) => void;
                 setEnabled: (enabled: boolean) => void;
                 openLogFile: () => void;
+                getRecentLogs: () => Promise<string[]>;
             };
             // ... allow other props
             [key: string]: any;
@@ -46,5 +47,11 @@ export const logger = {
         if (window.electronAPI?.log?.openLogFile) {
             window.electronAPI.log.openLogFile();
         }
+    },
+    getRecentLogs: async (): Promise<string[]> => {
+        if (window.electronAPI?.log?.getRecentLogs) {
+            return await window.electronAPI.log.getRecentLogs();
+        }
+        return [];
     }
 };

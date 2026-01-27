@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { logger } from './utils/logger';
 import { Layout } from './components/Layout';
 import { VaultView } from './components/VaultView';
 import { SecurityDashboard } from './components/SecurityDashboard';
@@ -18,7 +19,7 @@ import {
 } from '@premium-password-manager/core';
 
 const App: React.FC = () => {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+  // const [isDarkMode, setIsDarkMode] = useState<boolean>(true); // Removed redundant state
   const [currentView, setCurrentView] = useState<'vault' | 'security' | 'generator' | 'settings'>('vault');
   const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category>('All');
@@ -39,7 +40,7 @@ const App: React.FC = () => {
     biometricsEnabled: localStorage.getItem('ethervault_bio') === 'true',
     autoLockTimeout: 5,
     twoFactorEnabled: true,
-    theme: 'dark',
+    theme: 'dark', // Default to dark
     cloudProvider: 'none',
     lastSync: 'Never synced'
   });
@@ -84,6 +85,7 @@ const App: React.FC = () => {
       if (timer) clearTimeout(timer);
       // settings.autoLockTimeout is in minutes, convert to ms
       timer = setTimeout(() => {
+        logger.info('[VAULT] Auto-locking vault due to inactivity.');
         handleLock();
       }, settings.autoLockTimeout * 60 * 1000);
     };
@@ -99,13 +101,14 @@ const App: React.FC = () => {
     };
   }, [isAuthenticated, settings.autoLockTimeout]);
 
+  // Unified Theme Effect
   useEffect(() => {
-    if (isDarkMode) {
+    if (settings.theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-  }, [isDarkMode]);
+  }, [settings.theme]);
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -127,16 +130,19 @@ const App: React.FC = () => {
   const handleAddPassword = async (entry: Omit<PasswordEntry, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newEntry = await VaultService.addEntry(entry);
     setPasswords(prev => [newEntry, ...prev]);
+    logger.info('[DATA] Added new password entry');
   };
 
   const handleUpdatePassword = async (updatedEntry: PasswordEntry) => {
     const result = await VaultService.updateEntry(updatedEntry.id, updatedEntry);
     setPasswords(prev => prev.map(p => p.id === result.id ? result : p));
+    logger.info('[DATA] Updated password entry', { id: updatedEntry.id });
   };
 
   const handleDeletePassword = async (id: string) => {
     await VaultService.deleteEntry(id);
     setPasswords(prev => prev.filter(p => p.id !== id));
+    logger.info('[DATA] Deleted password entry', { id });
   };
 
   const handleSetupComplete = async (key: string, bioEnabled: boolean) => {
@@ -150,6 +156,7 @@ const App: React.FC = () => {
     // Initial data load after setup
     const entries = await VaultService.getEntries();
     setPasswords(entries);
+    logger.info('[AUTH] Initial account setup completed.');
   };
 
   const handleLogin = async (key: string) => {
@@ -158,14 +165,17 @@ const App: React.FC = () => {
       setIsAuthenticated(true);
       const entries = await VaultService.getEntries();
       setPasswords(entries);
+      logger.info('[AUTH] Login successful.');
       return true;
     }
+    logger.warn('[AUTH] Login failed: Invalid credentials.');
     return false;
   };
 
   const handleLock = () => {
     AuthService.lock();
     setIsAuthenticated(false);
+    logger.info('[VAULT] Vault locked.');
   };
 
   const handleOpenEdit = (entry: PasswordEntry) => {
@@ -234,8 +244,8 @@ const App: React.FC = () => {
     <Layout
       currentView={currentView}
       setView={setCurrentView}
-      isDarkMode={isDarkMode}
-      toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+      isDarkMode={settings.theme === 'dark'}
+      toggleDarkMode={() => setSettings({ ...settings, theme: settings.theme === 'dark' ? 'light' : 'dark' })}
       onLock={handleLock}
       onSearch={setSearchQuery}
       searchQuery={searchQuery}
