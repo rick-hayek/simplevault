@@ -104,6 +104,44 @@
         "system_auth": "系统验证...",
         "unlock_bio": "使用生物识别解锁"
     },
+    "security": {
+        "title": "安全状况",
+        "subtitle": "针对您密码库的实时安全分析。",
+        "scan": "全面扫描",
+        "score": "评分",
+        "status": {
+            "title": "保护状态",
+            "robust": "您的数字金库非常坚固。请继续保持开启双重验证。",
+            "decent": "您的安全性尚可，但仍需改进。",
+            "weak": "建议立即处理弱密码。"
+        },
+        "stats": {
+            "weak": "弱密码",
+            "reused": "重复使用",
+            "safe": "安全",
+            "secure_strong": "安全/强",
+            "other": "其他"
+        },
+        "alerts": {
+            "title": "安全警报",
+            "action_items": "个待处理项",
+            "empty": "未发现安全问题。干得漂亮！",
+            "resolve": "解决"
+        }
+    },
+    "generator": {
+        "title": "生成器",
+        "entropy": "熵值: ~{{bits}} bits",
+        "length": "长度",
+        "chars": "{{count}} 字符",
+        "options": {
+            "uppercase": "大写字母",
+            "lowercase": "小写字母",
+            "numbers": "数字",
+            "symbols": "符号"
+        },
+        "info": "更高的熵值使密码更难被暴力破解。"
+    },
     "welcome": {
         "step1": {
             "title": "保护您的密码库",

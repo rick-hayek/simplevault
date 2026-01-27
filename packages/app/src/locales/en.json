@@ -104,6 +104,44 @@
         "system_auth": "SYSTEM AUTH...",
         "unlock_bio": "Unlock with Bio ID"
     },
+    "security": {
+        "title": "Security Health",
+        "subtitle": "Real-time analysis of your credential vault.",
+        "scan": "FULL SCAN",
+        "score": "Score",
+        "status": {
+            "title": "Protection Status",
+            "robust": "Your digital vault is robust. Maintain strong 2FA everywhere.",
+            "decent": "Your security is decent, but some improvements are needed.",
+            "weak": "Immediate action recommended for weak credentials."
+        },
+        "stats": {
+            "weak": "Weak",
+            "reused": "Reused",
+            "safe": "Safe",
+            "secure_strong": "Secure/Strong",
+            "other": "Other"
+        },
+        "alerts": {
+            "title": "Security Alerts",
+            "action_items": "ACTION ITEMS",
+            "empty": "No security issues found. Great job!",
+            "resolve": "RESOLVE"
+        }
+    },
+    "generator": {
+        "title": "Generator",
+        "entropy": "Entropy: ~{{bits}} bits",
+        "length": "Length",
+        "chars": "{{count}} chars",
+        "options": {
+            "uppercase": "Uppercase",
+            "lowercase": "Lowercase",
+            "numbers": "Numbers",
+            "symbols": "Symbols"
+        },
+        "info": "Higher entropy makes passwords harder to crack via brute-force."
+    },
     "welcome": {
         "step1": {
             "title": "Secure Your Vault",

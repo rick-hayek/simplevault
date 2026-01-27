@@ -167,10 +167,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
         <div className="p-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400 group-hover:text-indigo-500 transition-colors">
           <Icon className="w-3.5 h-3.5" />
         </div>
-        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-tight">{label}</span>
+        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 tracking-tight">{label}</span>
       </div>
       {type === 'toggle' ? (
-        <button onClick={onClick} className={`w-8 h-4 rounded-full relative transition-all ${value ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-800'}`}>
+        <button onClick={onClick} className={`w-8 h-4 rounded-full relative transition-all ${value ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'}`}>
           <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${value ? 'right-0.5' : 'left-0.5'}`} />
         </button>
       ) : (

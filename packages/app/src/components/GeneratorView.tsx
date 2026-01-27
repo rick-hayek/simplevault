@@ -1,9 +1,11 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { RefreshCw, Copy, Check, Info } from 'lucide-react';
+import { RefreshCw, Copy, Check, Info, Type, Hash, Code } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { CryptoService } from '@premium-password-manager/core';
 
 export const GeneratorView: React.FC = () => {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [length, setLength] = useState(16);
   const [copied, setCopied] = useState(false);
@@ -39,12 +41,31 @@ export const GeneratorView: React.FC = () => {
     return Math.floor(length * Math.log2(poolSize));
   };
 
+  const CompactOption = ({ icon: Icon, label, value, onClick }: any) => (
+    <div
+      onClick={onClick}
+      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl flex items-center justify-between group cursor-pointer active:scale-[0.98] transition-all"
+    >
+      <div className="flex items-center gap-3">
+        <div className="p-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400 group-hover:text-violet-500 transition-colors">
+          <Icon className="w-3.5 h-3.5" />
+        </div>
+        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 tracking-tight">{label}</span>
+      </div>
+      <div className={`w-8 h-4 rounded-full relative transition-colors duration-200 ${value ? 'bg-violet-600' : 'bg-slate-200 dark:bg-slate-700'
+        }`}>
+        <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow-sm transition-all duration-200 ${value ? 'left-[18px]' : 'left-0.5'
+          }`} />
+      </div>
+    </div>
+  );
+
   return (
     <div className="max-w-2xl mx-auto space-y-4 md:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white">Generator</h1>
+        <h1 className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white">{t('generator.title')}</h1>
         <div className="px-3 py-1 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-violet-100 dark:border-violet-500/20">
-          Entropy: ~{getEntropy()} bits
+          {t('generator.entropy', { bits: getEntropy() })}
         </div>
       </div>
 
@@ -65,8 +86,8 @@ export const GeneratorView: React.FC = () => {
         <div className="space-y-6">
           <div>
             <div className="flex justify-between items-center mb-3 px-1">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">Length</label>
-              <span className="text-xs font-bold text-slate-900 dark:text-white">{length} chars</span>
+              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('generator.length')}</label>
+              <span className="text-xs font-bold text-slate-900 dark:text-white">{t('generator.chars', { count: length })}</span>
             </div>
             <input
               type="range" min="8" max="64" value={length}
@@ -75,26 +96,37 @@ export const GeneratorView: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-2 md:gap-4">
-            {Object.entries(options).map(([key, value]) => (
-              <button
-                key={key}
-                onClick={() => setOptions(prev => ({ ...prev, [key]: !value }))}
-                className={`flex items-center justify-between p-3 rounded-xl border transition-all ${value ? 'bg-violet-50/40 dark:bg-violet-500/5 border-violet-200 dark:border-violet-500/20' : 'bg-transparent border-slate-200 dark:border-slate-800'
-                  }`}
-              >
-                <span className="capitalize font-semibold text-slate-600 dark:text-slate-400 text-xs">{key}</span>
-                <div className={`w-8 h-4.5 rounded-full relative transition-colors ${value ? 'bg-violet-600' : 'bg-slate-200 dark:bg-slate-800'}`}>
-                  <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white transition-all ${value ? 'right-0.5' : 'left-0.5'}`} />
-                </div>
-              </button>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <CompactOption
+              icon={Type}
+              label={t('generator.options.uppercase')}
+              value={options.uppercase}
+              onClick={() => setOptions(prev => ({ ...prev, uppercase: !prev.uppercase }))}
+            />
+            <CompactOption
+              icon={Type}
+              label={t('generator.options.lowercase')}
+              value={options.lowercase}
+              onClick={() => setOptions(prev => ({ ...prev, lowercase: !prev.lowercase }))}
+            />
+            <CompactOption
+              icon={Hash}
+              label={t('generator.options.numbers')}
+              value={options.numbers}
+              onClick={() => setOptions(prev => ({ ...prev, numbers: !prev.numbers }))}
+            />
+            <CompactOption
+              icon={Code}
+              label={t('generator.options.symbols')}
+              value={options.symbols}
+              onClick={() => setOptions(prev => ({ ...prev, symbols: !prev.symbols }))}
+            />
           </div>
 
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
             <Info className="w-4 h-4 text-violet-400 shrink-0" />
             <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold leading-tight">
-              Higher entropy makes passwords harder to crack via brute-force.
+              {t('generator.info')}
             </p>
           </div>
         </div>

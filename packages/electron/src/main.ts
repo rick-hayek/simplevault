@@ -1,6 +1,9 @@
 import { app, BrowserWindow, Tray, Menu, nativeImage, globalShortcut } from 'electron';
 import * as path from 'path';
 
+// Set the app name explicitly
+app.setName('EtherVault');
+
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
