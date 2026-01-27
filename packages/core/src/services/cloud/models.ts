@@ -1,4 +1,4 @@
-import { VaultStorageItem } from '../../types';
+import { VaultStorageItem, Logger } from '../../types';
 
 export interface SyncResult {
     success: boolean;
@@ -6,7 +6,12 @@ export interface SyncResult {
     syncedCount?: number;
 }
 
-export interface CloudProvider {
+export interface CloudProviderInterface {
+    /**
+     * Set a logger instance for debugging
+     */
+    setLogger(logger: Logger): void;
+
     /**
      * Unique identifier for the provider (e.g., 'icloud', 'gdrive')
      */

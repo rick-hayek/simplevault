@@ -20,7 +20,7 @@ import {
   X
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { AppSettings, CloudProvider, AuthService, VaultService } from '@premium-password-manager/core';
+import { AppSettings, CloudProvider, AuthService, VaultService, CloudService } from '@premium-password-manager/core';
 import { ImportModal } from './ImportModal';
 import { ExportModal } from './ExportModal';
 
@@ -173,13 +173,52 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
     setSettings({ ...settings, biometricsEnabled: !settings.biometricsEnabled });
   };
 
-  const handleSync = (provider: CloudProvider) => {
+  const handleSync = async (provider: CloudProvider) => {
+    setIsSyncing(true);
+
+    // If the same provider, Force Sync
     if (settings.cloudProvider === provider) {
-      setIsSyncing(true);
-      setTimeout(() => { setIsSyncing(false); setSettings({ ...settings, lastSync: 'Just now' }); }, 1000);
-    } else {
-      setIsSyncing(true);
-      setTimeout(() => { setIsSyncing(false); setSettings({ ...settings, cloudProvider: provider, lastSync: 'Just now' }); }, 800);
+      try {
+        const entries = await VaultService.getEncryptedEntries();
+        await CloudService.sync(entries);
+        setSettings({ ...settings, lastSync: 'Just now' });
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 2000);
+      } catch (err) {
+        console.error('Sync failed', err);
+        setError(t('settings.error.failed'));
+      } finally {
+        setIsSyncing(false);
+      }
+      return;
+    }
+
+    // Switch Provider Logic
+    if (provider === 'none') {
+      setSettings({ ...settings, cloudProvider: provider, lastSync: '' });
+      setIsSyncing(false);
+      return;
+    }
+
+    try {
+      CloudService.useProvider(provider);
+      const connected = await CloudService.connect();
+
+      if (connected) {
+        setSettings({ ...settings, cloudProvider: provider, lastSync: 'Connected' });
+        // Optional: Trigger initial sync immediately?
+        // const entries = await VaultService.getEntries();
+        // await CloudService.sync(entries);
+      } else {
+        // Failed to connect (e.g. popup closed)
+        console.warn('Failed to connect to provider', provider);
+        setError(t('settings.error.failed'));
+      }
+    } catch (e) {
+      console.error('Provider connection error', e);
+      setError(t('settings.error.failed'));
+    } finally {
+      setIsSyncing(false);
     }
   };
 

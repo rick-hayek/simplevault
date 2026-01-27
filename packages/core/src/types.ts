@@ -41,3 +41,9 @@ export interface VaultStorageItem {
     favorite: boolean;
     icon?: string;
 }
+
+export interface Logger {
+    info: (...args: any[]) => void;
+    warn: (...args: any[]) => void;
+    error: (...args: any[]) => void;
+}

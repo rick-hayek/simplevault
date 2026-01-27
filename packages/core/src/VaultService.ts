@@ -1,4 +1,4 @@
-import { PasswordEntry, Category } from './types';
+import { PasswordEntry, Category, VaultStorageItem } from './types';
 import { CryptoService } from './CryptoService';
 import { AuthService } from './AuthService';
 import { StorageService } from './StorageService';
@@ -10,6 +10,10 @@ export class VaultService {
 
     static async setInitialEntries(entries: PasswordEntry[]) {
         this.entries = entries;
+    }
+
+    static async getEncryptedEntries(): Promise<VaultStorageItem[]> {
+        return StorageService.getAll('vault');
     }
 
     static async getEntries(): Promise<PasswordEntry[]> {

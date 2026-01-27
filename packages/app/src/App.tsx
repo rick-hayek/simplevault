@@ -14,10 +14,14 @@ import {
   AuthService,
   VaultService,
   CryptoService,
+  CloudService,
   PasswordEntry,
   Category,
   AppSettings
 } from '@premium-password-manager/core';
+
+// Initialize Cloud Logging with App Logger (Universal)
+CloudService.setLogger(logger);
 
 const App: React.FC = () => {
   // const [isDarkMode, setIsDarkMode] = useState<boolean>(true); // Removed redundant state

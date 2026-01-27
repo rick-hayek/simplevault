@@ -1,11 +1,11 @@
-import { CloudProvider } from '../models';
-import { VaultStorageItem } from '../../../types';
+import { CloudProviderInterface } from '../models';
+import { VaultStorageItem, Logger } from '../../../types';
 import { CKRecord, CKResponse, Window } from './cloudkit_types';
 
 // Declare global CloudKit on window
 declare const window: Window;
 
-export class ICloudProvider implements CloudProvider {
+export class ICloudProvider implements CloudProviderInterface {
     readonly id = 'icloud';
     readonly name = 'iCloud';
 
@@ -14,15 +14,28 @@ export class ICloudProvider implements CloudProvider {
     private apiToken = 'YOUR_APPLE_API_TOKEN';
 
     private connected = false;
+    private logger: Logger | null = null;
+
+    setLogger(logger: Logger) {
+        this.logger = logger;
+    }
+
+    private log(level: 'info' | 'warn' | 'error', ...args: any[]) {
+        if (this.logger) {
+            this.logger[level](...args);
+        } else {
+            console[level](...args);
+        }
+    }
 
     async connect(): Promise<boolean> {
         if (typeof window === 'undefined' || !window.CloudKit) {
-            console.error('[iCloud] CloudKit JS not loaded.');
+            this.log('error', '[iCloud] CloudKit JS not loaded.');
             return false;
         }
 
         try {
-            console.log('[iCloud] Configuring...');
+            this.log('info', '[iCloud] Configuring...');
             window.CloudKit.configure({
                 containers: [{
                     containerIdentifier: this.containerIdentifier,
