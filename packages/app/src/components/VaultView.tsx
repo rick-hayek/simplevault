@@ -131,8 +131,12 @@ export const VaultView: React.FC<VaultViewProps> = ({
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-900 dark:text-slate-100 font-bold border border-slate-100 dark:border-slate-700">
-                    {entry.title.charAt(0).toUpperCase()}
+                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-900 dark:text-slate-100 font-bold border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    {entry.icon ? (
+                      <img src={entry.icon} alt={entry.title} className="w-full h-full object-cover" />
+                    ) : (
+                      entry.title.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-bold text-slate-900 dark:text-white text-sm truncate">{entry.title}</h3>
@@ -175,8 +179,12 @@ export const VaultView: React.FC<VaultViewProps> = ({
               onClick={() => onEdit(entry)}
               className="md:hidden flex items-center gap-3 p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl active:bg-slate-100 dark:active:bg-slate-900 transition-colors shadow-sm"
             >
-              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-900 dark:text-slate-100 font-bold shrink-0 border border-slate-200 dark:border-slate-800">
-                {entry.title.charAt(0).toUpperCase()}
+              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-900 dark:text-slate-100 font-bold shrink-0 border border-slate-200 dark:border-slate-800 overflow-hidden">
+                {entry.icon ? (
+                  <img src={entry.icon} alt={entry.title} className="w-full h-full object-cover" />
+                ) : (
+                  entry.title.charAt(0).toUpperCase()
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate leading-none">{entry.title}</h4>

@@ -14,6 +14,7 @@ export interface PasswordEntry {
     createdAt: number;
     updatedAt: number;
     favorite: boolean;
+    icon?: string;
 }
 
 export type Category = 'All' | 'Personal' | 'Work' | 'Others';

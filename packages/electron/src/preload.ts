@@ -11,6 +11,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
         setEnabled: (enabled: boolean) => ipcRenderer.send('log-set-enabled', enabled),
         openLogFile: () => ipcRenderer.send('log-open'),
         getRecentLogs: () => ipcRenderer.invoke('log-read-recent'),
+    },
+    utils: {
+        fetchIcon: (url: string) => ipcRenderer.invoke('fetch-icon', url),
     }
 });
 

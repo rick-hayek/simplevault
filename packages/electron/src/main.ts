@@ -202,3 +202,32 @@ ipcMain.handle('log-read-recent', async () => {
         return [];
     }
 });
+
+import { net } from 'electron';
+
+ipcMain.handle('fetch-icon', async (event, url: string) => {
+    return new Promise((resolve) => {
+        const request = net.request(url);
+        request.on('response', (response) => {
+            if (response.statusCode !== 200) {
+                resolve(null);
+                return;
+            }
+            const chunks: Buffer[] = [];
+            response.on('data', (chunk) => chunks.push(chunk));
+            response.on('end', () => {
+                const buffer = Buffer.concat(chunks);
+                const base64 = buffer.toString('base64');
+                // Ensure content type is image
+                const contentType = response.headers['content-type'] || 'image/png';
+                const result = `data:${contentType};base64,${base64}`;
+                resolve(result);
+            });
+        });
+        request.on('error', (error) => {
+            log.warn('Failed to fetch icon via IPC:', error);
+            resolve(null);
+        });
+        request.end();
+    });
+});

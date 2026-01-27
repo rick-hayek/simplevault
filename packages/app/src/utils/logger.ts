@@ -10,6 +10,9 @@ declare global {
                 openLogFile: () => void;
                 getRecentLogs: () => Promise<string[]>;
             };
+            utils?: {
+                fetchIcon: (url: string) => Promise<string | null>;
+            };
             // ... allow other props
             [key: string]: any;
         };

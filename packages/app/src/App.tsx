@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { logger } from './utils/logger';
+import { IconService } from './utils/IconService';
 import { Layout } from './components/Layout';
 import { VaultView } from './components/VaultView';
 import { SecurityDashboard } from './components/SecurityDashboard';
@@ -131,12 +132,40 @@ const App: React.FC = () => {
     const newEntry = await VaultService.addEntry(entry);
     setPasswords(prev => [newEntry, ...prev]);
     logger.info('[DATA] Added new password entry');
+
+    // Background Icon Fetch
+    if (entry.url || entry.website) {
+      const targetUrl = entry.url || entry.website;
+      IconService.fetchIcon(targetUrl!).then(async (base64Icon) => {
+        if (base64Icon) {
+          const updated = { ...newEntry, icon: base64Icon };
+          await VaultService.updateEntry(newEntry.id, updated);
+          setPasswords(prev => prev.map(p => p.id === newEntry.id ? updated : p));
+        }
+      });
+    }
   };
 
   const handleUpdatePassword = async (updatedEntry: PasswordEntry) => {
+    // Check if we need to fetch icon (if URL changed or icon missing)
+    const oldEntry = passwords.find(p => p.id === updatedEntry.id);
+    const urlChanged = oldEntry && (oldEntry.url !== updatedEntry.url || oldEntry.website !== updatedEntry.website);
+    const needsIcon = !updatedEntry.icon || urlChanged;
+
     const result = await VaultService.updateEntry(updatedEntry.id, updatedEntry);
     setPasswords(prev => prev.map(p => p.id === result.id ? result : p));
     logger.info('[DATA] Updated password entry', { id: updatedEntry.id });
+
+    if (needsIcon && (updatedEntry.url || updatedEntry.website)) {
+      const targetUrl = updatedEntry.url || updatedEntry.website;
+      IconService.fetchIcon(targetUrl!).then(async (base64Icon) => {
+        if (base64Icon) {
+          const finalEntry = { ...result, icon: base64Icon };
+          await VaultService.updateEntry(result.id, finalEntry);
+          setPasswords(prev => prev.map(p => p.id === result.id ? finalEntry : p));
+        }
+      });
+    }
   };
 
   const handleDeletePassword = async (id: string) => {

@@ -50,6 +50,7 @@ metadata.json
 coverage/
 *.tmp
 *.temp
+temp/
 
 # Mobile (Capacitor) specific build results
 /packages/app/android/app/build/
