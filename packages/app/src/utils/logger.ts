@@ -11,6 +11,7 @@ declare global {
                 getRecentLogs: () => Promise<string[]>;
             };
             clearCache?: () => Promise<boolean>;
+            getVersion?: () => Promise<string>;
             utils?: {
                 fetchIcon: (url: string) => Promise<string | null>;
             };

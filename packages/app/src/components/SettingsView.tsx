@@ -42,6 +42,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
   const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
   const [activityLogs, setActivityLogs] = useState<string[]>([]);
   const [cacheMessage, setCacheMessage] = useState<string | null>(null);
+  const [appVersion, setAppVersion] = useState<string>(__APP_VERSION__);
+
+  useEffect(() => {
+    // Runtime check for version (Desktop overrides Web build version)
+    const checkVersion = async () => {
+      if (window.electronAPI?.getVersion) {
+        const ver = await window.electronAPI.getVersion();
+        setAppVersion(ver);
+      }
+    };
+    checkVersion();
+  }, []);
 
   const fetchLogs = async () => {
     if (logger.getRecentLogs) {
@@ -225,7 +237,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('settings.title')}</h1>
           <p className="hidden md:block text-slate-500 dark:text-slate-400 text-xs mt-0.5">{t('settings.subtitle')}</p>
         </div>
-        <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] border border-slate-200 dark:border-slate-800 px-2 py-1 rounded-lg">VER 2.6.0</div>
+        <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] border border-slate-200 dark:border-slate-800 px-2 py-1 rounded-lg">VER {appVersion}</div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

@@ -251,3 +251,7 @@ ipcMain.handle('app-clear-cache', async () => {
         return false;
     }
 });
+
+ipcMain.handle('app-get-version', () => {
+    return app.getVersion();
+});
