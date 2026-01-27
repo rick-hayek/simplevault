@@ -30,3 +30,14 @@ export interface AppSettings {
     lastSync: string;
     masterLogEnabled?: boolean;
 }
+
+export interface VaultStorageItem {
+    id: string;
+    payload: string;
+    nonce: string;
+    category: Category;
+    createdAt: number;
+    updatedAt: number;
+    favorite: boolean;
+    icon?: string;
+}

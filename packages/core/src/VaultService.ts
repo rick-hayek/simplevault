@@ -3,6 +3,7 @@ import { CryptoService } from './CryptoService';
 import { AuthService } from './AuthService';
 import { StorageService } from './StorageService';
 import { SecurityService } from './SecurityService';
+import { CloudService } from './services/cloud/CloudService';
 
 export class VaultService {
     private static entries: PasswordEntry[] = [];
@@ -59,11 +60,17 @@ export class VaultService {
             category: newEntry.category, // Stored unencrypted for fast filtering? Optional.
             createdAt: newEntry.createdAt,
             updatedAt: newEntry.updatedAt,
-            favorite: newEntry.favorite
+            favorite: newEntry.favorite,
+            icon: newEntry.icon
         };
 
         await StorageService.setItem('vault', id, storageItem);
         this.entries = [newEntry, ...this.entries];
+
+        // Sync to Cloud (Background)
+        // @ts-ignore
+        CloudService.uploadEntry(storageItem).catch(e => console.error('Cloud Sync Failed:', e));
+
         return newEntry;
     }
 
@@ -97,17 +104,26 @@ export class VaultService {
             category: updated.category,
             createdAt: updated.createdAt,
             updatedAt: updated.updatedAt,
-            favorite: updated.favorite
+            favorite: updated.favorite,
+            icon: updated.icon
         };
 
         await StorageService.setItem('vault', id, storageItem);
         this.entries = this.entries.map(e => e.id === id ? updated : e);
+
+        // Sync to Cloud (Background)
+        // @ts-ignore
+        CloudService.uploadEntry(storageItem).catch(e => console.error('Cloud Sync Failed:', e));
+
         return updated;
     }
 
     static async deleteEntry(id: string): Promise<void> {
         await StorageService.deleteItem('vault', id);
         this.entries = this.entries.filter(e => e.id !== id);
+
+        // Sync to Cloud (Background)
+        CloudService.deleteEntry(id).catch(e => console.error('Cloud Sync Failed:', e));
     }
 
     static async exportVault(key: Uint8Array): Promise<string> {

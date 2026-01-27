@@ -251,7 +251,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
           <div className="grid grid-cols-3 gap-2">
             {[
               { id: 'google', name: 'Drive', icon: Globe },
-              { id: 'icloud', name: 'iCloud', icon: Cloud },
+              // { id: 'icloud', name: 'iCloud', icon: Cloud }, // Postponed
               { id: 'onedrive', name: 'Sync', icon: Smartphone }
             ].map(p => (
               <button
