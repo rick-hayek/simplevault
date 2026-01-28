@@ -61,73 +61,130 @@ export const GeneratorView: React.FC = () => {
   );
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4 md:space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white">{t('generator.title')}</h1>
-        <div className="px-3 py-1 bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-violet-100 dark:border-violet-500/20">
+        <div className="hidden md:flex items-center gap-3">
+          <div className="p-2 bg-violet-50 dark:bg-violet-500/10 rounded-xl text-violet-600 dark:text-violet-400">
+            <RefreshCw className="w-6 h-6" />
+          </div>
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">{t('generator.title')}</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{t('generator.subtitle')}</p>
+          </div>
+        </div>
+        <div className="hidden md:block px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700">
           {t('generator.entropy', { bits: getEntropy() })}
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 p-5 md:p-8 rounded-2xl md:rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div className="relative group mb-6 md:mb-8">
-          <div className="absolute -inset-1 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-xl blur opacity-10 group-hover:opacity-25 transition-opacity duration-500" />
-          <div className="relative flex items-center bg-slate-50 dark:bg-slate-950 p-4 md:p-6 rounded-xl border border-slate-200 dark:border-slate-800">
-            <span className="flex-1 text-lg md:text-2xl font-mono font-bold text-slate-700 dark:text-violet-400 overflow-hidden text-ellipsis whitespace-nowrap tracking-wider">
-              {password}
-            </span>
-            <div className="flex gap-1 md:gap-2 ml-2">
-              <button onClick={generatePassword} className="p-2 text-slate-400 hover:text-violet-600 transition-colors active:scale-90"><RefreshCw className="w-5 h-5" /></button>
-              <button onClick={handleCopy} className="p-2 text-slate-400 hover:text-emerald-500 transition-colors active:scale-90">{copied ? <Check className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5" />}</button>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Result Card */}
+        <div className="lg:col-span-7 flex flex-col">
+          <div className="bg-white dark:bg-slate-900 p-6 md:p-10 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden flex-1 flex flex-col justify-center min-h-[300px]">
+            {/* Background Decoration */}
+
+            <div className="absolute -inset-1 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-[32px] blur-2xl opacity-5 dark:opacity-10 pointer-events-none" />
+
+            <div className="relative text-center space-y-8 z-10">
+              <span className="text-3xl md:text-5xl font-mono font-bold text-slate-800 dark:text-white break-all tracking-tight leading-tight selection:bg-violet-500 selection:text-white block min-h-[1.2em]">
+                {password}
+              </span>
+
+              <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto w-full pt-4">
+                <button
+                  onClick={generatePassword}
+                  className="flex-1 py-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-500/50 rounded-2xl font-bold text-slate-600 dark:text-slate-300 hover:text-violet-600 dark:hover:text-violet-400 transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-sm hover:shadow-md"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                  <span className="uppercase tracking-wider text-xs">{t('generator.actions.regenerate', 'Regenerate')}</span>
+                </button>
+                <button
+                  onClick={handleCopy}
+                  className="flex-1 py-4 bg-violet-600 text-white rounded-2xl font-bold shadow-lg shadow-violet-500/30 hover:bg-violet-700 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                >
+                  {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                  <span className="uppercase tracking-wider text-xs">{copied ? t('common.copied', 'Copied') : t('common.copy', 'Copy')}</span>
+                </button>
+              </div>
+
+
             </div>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div>
-            <div className="flex justify-between items-center mb-3 px-1">
-              <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t('generator.length')}</label>
-              <span className="text-xs font-bold text-slate-900 dark:text-white">{t('generator.chars', { count: length })}</span>
+        {/* Right Column: Configuration */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm h-full flex flex-col justify-center">
+            <div className="space-y-8">
+              <div>
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
+                      <Hash className="w-4 h-4" />
+                      {t('generator.length')}
+                    </label>
+                    <div className="md:hidden px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-lg text-[9px] font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700 w-fit">
+                      {t('generator.entropy', { bits: getEntropy() })}
+                    </div>
+                  </div>
+                  <input
+                    type="number"
+                    min="4"
+                    max="128"
+                    value={length}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      if (!isNaN(val)) setLength(Math.min(128, Math.max(1, val)));
+                    }}
+                    className="text-lg font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-2xl tabular-nums w-20 text-center border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                  />
+                </div>
+
+                <div className="h-10 flex items-center px-1">
+                  <input
+                    type="range" min="4" max="128" value={length}
+                    onChange={(e) => setLength(parseInt(e.target.value))}
+                    className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-violet-600 hover:accent-violet-500 transition-all touch-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                <CompactOption
+                  icon={Type}
+                  label={t('generator.options.uppercase')}
+                  value={options.uppercase}
+                  onClick={() => setOptions(prev => ({ ...prev, uppercase: !prev.uppercase }))}
+                />
+                <CompactOption
+                  icon={Type}
+                  label={t('generator.options.lowercase')}
+                  value={options.lowercase}
+                  onClick={() => setOptions(prev => ({ ...prev, lowercase: !prev.lowercase }))}
+                />
+                <CompactOption
+                  icon={Hash}
+                  label={t('generator.options.numbers')}
+                  value={options.numbers}
+                  onClick={() => setOptions(prev => ({ ...prev, numbers: !prev.numbers }))}
+                />
+                <CompactOption
+                  icon={Code}
+                  label={t('generator.options.symbols')}
+                  value={options.symbols}
+                  onClick={() => setOptions(prev => ({ ...prev, symbols: !prev.symbols }))}
+                />
+              </div>
+
+              <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex items-start gap-3">
+                <div className="p-2 bg-violet-50 dark:bg-violet-900/20 rounded-full text-violet-500 shrink-0">
+                  <Info className="w-4 h-4" />
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed pt-1">
+                  {t('generator.info')}
+                </p>
+              </div>
             </div>
-            <input
-              type="range" min="8" max="64" value={length}
-              onChange={(e) => setLength(parseInt(e.target.value))}
-              className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full appearance-none cursor-pointer accent-violet-600"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <CompactOption
-              icon={Type}
-              label={t('generator.options.uppercase')}
-              value={options.uppercase}
-              onClick={() => setOptions(prev => ({ ...prev, uppercase: !prev.uppercase }))}
-            />
-            <CompactOption
-              icon={Type}
-              label={t('generator.options.lowercase')}
-              value={options.lowercase}
-              onClick={() => setOptions(prev => ({ ...prev, lowercase: !prev.lowercase }))}
-            />
-            <CompactOption
-              icon={Hash}
-              label={t('generator.options.numbers')}
-              value={options.numbers}
-              onClick={() => setOptions(prev => ({ ...prev, numbers: !prev.numbers }))}
-            />
-            <CompactOption
-              icon={Code}
-              label={t('generator.options.symbols')}
-              value={options.symbols}
-              onClick={() => setOptions(prev => ({ ...prev, symbols: !prev.symbols }))}
-            />
-          </div>
-
-          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
-            <Info className="w-4 h-4 text-violet-400 shrink-0" />
-            <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold leading-tight">
-              {t('generator.info')}
-            </p>
           </div>
         </div>
       </div>

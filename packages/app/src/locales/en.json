@@ -12,7 +12,9 @@
     },
     "common": {
         "cancel": "Cancel",
-        "confirm_delete": "Delete"
+        "confirm_delete": "Delete",
+        "copy": "Copy",
+        "copied": "Copied"
     },
     "vault": {
         "title": "Your Vault",
@@ -60,6 +62,16 @@
         "sync_provider": "Sync Provider",
         "updating": "UPDATING...",
         "force_sync": "FORCE SYNC",
+        "cloud": {
+            "connected": "Connected",
+            "connected_desc": "Vault is securely synced with {{provider}}.",
+            "connect_desc": "Connect to {{provider}} to enable automatic cloud backup and sync.",
+            "last_synced": "Last synced:",
+            "syncing": "Syncing...",
+            "sync_now": "Sync Now",
+            "disconnect": "Disconnect",
+            "connect_account": "Connect Account"
+        },
         "option": {
             "biometric": "Biometric ID",
             "2fa": "2FA Protection",
@@ -177,7 +189,11 @@
             "numbers": "Numbers",
             "symbols": "Symbols"
         },
-        "info": "Higher entropy makes passwords harder to crack via brute-force."
+        "info": "Higher entropy makes passwords harder to crack via brute-force.",
+        "subtitle": "Create strong, secure passwords",
+        "actions": {
+            "regenerate": "Regenerate"
+        }
     },
     "welcome": {
         "step1": {

@@ -1,6 +1,7 @@
 import { CloudProviderInterface } from './models';
 import { ICloudProvider } from './providers/ICloudProvider';
 import { GoogleDriveProvider } from './providers/GoogleDriveProvider';
+import { OneDriveProvider } from './providers/OneDriveProvider';
 import { PasswordEntry, VaultStorageItem, Logger } from '../../types';
 
 class CloudServiceManager {
@@ -12,6 +13,7 @@ class CloudServiceManager {
         // Register default providers
         this.registerProvider(new ICloudProvider());
         this.registerProvider(new GoogleDriveProvider());
+        this.registerProvider(new OneDriveProvider());
     }
 
     setLogger(logger: Logger) {

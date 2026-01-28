@@ -47,7 +47,7 @@ const App: React.FC = () => {
     const savedProvider = localStorage.getItem('ethervault_cloud_provider') as CloudProvider | null;
     return {
       biometricsEnabled: localStorage.getItem('ethervault_bio') === 'true',
-      autoLockTimeout: 5,
+      autoLockTimeout: 15,
       twoFactorEnabled: true,
       theme: 'dark',
       cloudProvider: savedProvider || 'none',

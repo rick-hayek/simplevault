@@ -12,7 +12,9 @@
     },
     "common": {
         "cancel": "取消",
-        "confirm_delete": "删除"
+        "confirm_delete": "删除",
+        "copy": "复制",
+        "copied": "已复制"
     },
     "vault": {
         "title": "您的密码库",
@@ -60,6 +62,16 @@
         "sync_provider": "同步提供商",
         "updating": "更新中...",
         "force_sync": "强制同步",
+        "cloud": {
+            "connected": "已连接",
+            "connected_desc": "您的密码库已与 {{provider}} 同步。",
+            "connect_desc": "连接到 {{provider}} 以开启自动云端备份和同步。",
+            "last_synced": "上次同步：",
+            "syncing": "同步中...",
+            "sync_now": "立即同步",
+            "disconnect": "断开连接",
+            "connect_account": "连接账户"
+        },
         "option": {
             "biometric": "生物识别",
             "2fa": "双重验证",
@@ -177,7 +189,11 @@
             "numbers": "数字",
             "symbols": "符号"
         },
-        "info": "更高的熵值使密码更难被暴力破解。"
+        "info": "更高的熵值使密码更难被暴力破解。",
+        "subtitle": "创建强大且安全的密码",
+        "actions": {
+            "regenerate": "重新生成"
+        }
     },
     "welcome": {
         "step1": {

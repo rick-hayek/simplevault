@@ -129,35 +129,46 @@ export const Layout: React.FC<LayoutProps> = ({
         </div>
       </aside>
 
-      {/* Mobile Header (Sticky) */}
-      <header className="md:hidden flex items-center h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0 z-30 px-4 titlebar">
-        {isSearchMode ? (
-          <div className="flex items-center w-full gap-2 animate-in slide-in-from-right-2 duration-200">
-            <button onClick={() => { setIsSearchMode(false); onSearch?.(''); }} className="p-2 text-slate-900 dark:text-white no-drag"><ArrowLeft className="w-5 h-5" /></button>
-            <div className="flex-1 relative">
-              <input
-                type="text" autoFocus value={searchQuery} onChange={(e) => onSearch?.(e.target.value)}
-                placeholder={t('layout.search_placeholder')}
-                className="w-full bg-slate-100 dark:bg-slate-900 rounded-lg py-1.5 pl-3 pr-8 outline-none text-xs text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 no-drag"
-              />
+      <header className="md:hidden flex items-center h-14 bg-slate-50 dark:bg-slate-950 shrink-0 z-30 px-4 titlebar transition-all duration-300">
+        {currentView === 'vault' ? (
+          /* Root View Header (Vault) */
+          isSearchMode ? (
+            <div className="flex items-center w-full gap-2 animate-in slide-in-from-right-2 duration-200">
+              <button onClick={() => { setIsSearchMode(false); onSearch?.(''); }} className="p-2 text-slate-900 dark:text-white no-drag active:scale-95 transition-transform"><ArrowLeft className="w-5 h-5" /></button>
+              <div className="flex-1 relative">
+                <input
+                  type="text" autoFocus value={searchQuery} onChange={(e) => onSearch?.(e.target.value)}
+                  placeholder={t('layout.search_placeholder')}
+                  className="w-full bg-slate-100 dark:bg-slate-900 rounded-xl py-2 pl-4 pr-3 outline-none text-sm text-slate-900 dark:text-white border border-transparent focus:border-indigo-500/50 focus:bg-white dark:focus:bg-slate-900 transition-all no-drag"
+                />
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                <div className="p-1.5 bg-slate-900 dark:bg-white rounded-xl shrink-0 shadow-sm"><ShieldCheck className="w-4 h-4 text-white dark:text-slate-900" /></div>
+                <span className="font-bold text-lg text-slate-900 dark:text-white truncate tracking-tight">{t('layout.nav.vault')}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button onClick={() => setIsSearchMode(true)} className="p-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl no-drag active:scale-95 transition-all"><Search className="w-5 h-5" /></button>
+                <button onClick={onAddClick} className="p-2.5 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 rounded-xl no-drag active:scale-95 transition-all mx-1"><Plus className="w-5 h-5" /></button>
+                <button onClick={() => setIsMobileMenuOpen(true)} className="p-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl no-drag active:scale-95 transition-all"><MoreVertical className="w-5 h-5" /></button>
+              </div>
+            </>
+          )
         ) : (
-          <>
-            <div className="flex items-center gap-2 flex-1 overflow-hidden">
-              <div className="p-1 bg-slate-900 dark:bg-white rounded-lg shrink-0"><ShieldCheck className="w-4 h-4 text-white dark:text-slate-900" /></div>
-              <span className="font-bold text-base text-slate-900 dark:text-white truncate">EtherVault</span>
-            </div>
-            <div className="flex items-center">
-              {currentView === 'vault' && (
-                <>
-                  <button onClick={() => setIsSearchMode(true)} className="p-2 text-slate-900 dark:text-white no-drag"><Search className="w-5 h-5" /></button>
-                  <button onClick={onAddClick} className="p-2 text-slate-900 dark:text-white no-drag"><Plus className="w-5 h-5" /></button>
-                </>
-              )}
-              <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-slate-900 dark:text-white no-drag"><MoreVertical className="w-5 h-5" /></button>
-            </div>
-          </>
+          /* Child View Header (Settings, etc.) */
+          <div className="flex items-center w-full gap-3 animate-in fade-in duration-300">
+            <button
+              onClick={() => setView('vault')}
+              className="p-2 -ml-2 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full no-drag active:scale-95 transition-all"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <span className="font-bold text-lg text-slate-900 dark:text-white flex-1 truncate">
+              {navItems.find(i => i.id === currentView)?.label}
+            </span>
+          </div>
         )}
       </header>
 
@@ -205,8 +216,9 @@ export const Layout: React.FC<LayoutProps> = ({
       </div>
 
       {/* Main Content Area (Independent scroll) */}
-      <main className="flex-1 overflow-y-auto p-4 lg:p-8 relative scroll-smooth">
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-slate-500/5 to-transparent pointer-events-none" />
+      <main className="flex-1 overflow-y-auto p-4 lg:p-8 relative scroll-smooth scrollbar-hide">
+        {/* Gradient removed for seamless header */}
+
         <div className="max-w-6xl mx-auto h-full">
           {children}
         </div>

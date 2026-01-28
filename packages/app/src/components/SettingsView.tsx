@@ -450,19 +450,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
   };
 
   const CompactSetting = ({ icon: Icon, label, value, onClick, type = 'toggle' }: any) => (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl flex items-center justify-between group">
+    <div
+      onClick={type === 'toggle' ? onClick : undefined}
+      className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center justify-between group transition-all ${type === 'toggle' ? 'cursor-pointer active:scale-[0.99] hover:border-indigo-500/30' : ''}`}
+    >
       <div className="flex items-center gap-3">
-        <div className="p-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400 group-hover:text-indigo-500 transition-colors">
-          <Icon className="w-3.5 h-3.5" />
+        <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-400 group-hover:text-indigo-500 transition-colors">
+          <Icon className="w-4 h-4" />
         </div>
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 tracking-tight">{label}</span>
+        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 tracking-tight">{label}</span>
       </div>
       {type === 'toggle' ? (
-        <button onClick={onClick} className={`w-8 h-4 rounded-full relative transition-all ${value ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'}`}>
-          <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${value ? 'right-0.5' : 'left-0.5'}`} />
-        </button>
+        <div className={`w-10 h-6 rounded-full relative transition-all duration-300 ${value ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700'}`}>
+          <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-sm ${value ? 'right-1' : 'left-1'}`} />
+        </div>
       ) : (
-        <button onClick={onClick} disabled={!onClick} className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase disabled:cursor-default">
+        <button onClick={(e) => { e.stopPropagation(); onClick?.(); }} disabled={!onClick} className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase disabled:cursor-default px-2 py-1">
           {value}
         </button>
       )}
@@ -472,26 +475,26 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
   return (
     <div className="space-y-4 pb-6">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="hidden md:block">
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('settings.title')}</h1>
           <p className="hidden md:block text-slate-500 dark:text-slate-400 text-xs mt-0.5">{t('settings.subtitle')}</p>
         </div>
-        <div className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] border border-slate-200 dark:border-slate-800 px-2 py-1 rounded-lg">VER {appVersion}</div>
+        <div className="hidden md:block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] border border-slate-200 dark:border-slate-800 px-2 py-1 rounded-lg">VER {appVersion}</div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Cloud Config - Tighter */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+        <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
           <div className="flex items-center justify-between mb-1">
             <h2 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">{t('settings.sync_provider')}</h2>
             {settings.lastSync && <span className="text-[8px] text-emerald-500 font-bold uppercase">{settings.lastSync}</span>}
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="space-y-3">
             {[
               {
-                id: 'google', name: 'Google Drive', icon: () => (
-                  <svg viewBox="0 0 87.3 78" className="w-4 h-4">
+                id: 'google', name: 'Google Drive', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'hover:border-blue-200 dark:hover:border-blue-800', icon: () => (
+                  <svg viewBox="0 0 87.3 78" className="w-6 h-6">
                     <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da" />
                     <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47" />
                     <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335" />
@@ -501,39 +504,89 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                   </svg>
                 )
               },
-              // { id: 'icloud', name: 'iCloud', icon: Cloud }, // Postponed
-              {
-                id: 'onedrive', name: 'OneDrive', icon: () => (
-                  <svg viewBox="0 0 24 24" className="w-4 h-4">
-                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4C8.36 4 5.33 6.59 4.65 10.04C2.02 10.32 0 12.48 0 15.12C0 17.89 2.24 20.13 5 20.13H19C21.76 20.13 24 17.89 24 15.12C24 12.48 21.98 10.32 19.35 10.04Z" fill="#0078D4" />
-                  </svg>
-                )
-              }
-            ].map(p => (
-              <button
-                key={p.id}
-                onClick={() => handleSync(p.id as CloudProvider)}
-                className={`flex flex-col items-center gap-1.5 p-2 rounded-xl border transition-all ${settings.cloudProvider === p.id
-                  ? 'border-indigo-500 bg-indigo-50/30 dark:bg-indigo-500/5'
-                  : 'border-slate-50 dark:border-slate-800 hover:border-slate-200'
-                  }`}
-              >
-                <div className={`p-1.5 rounded-lg ${settings.cloudProvider === p.id ? 'bg-white dark:bg-slate-800' : 'bg-slate-100 dark:bg-slate-800'}`}>
-                  <p.icon />
-                </div>
-                <span className="text-[8px] font-bold text-slate-500">{p.name}</span>
-              </button>
-            ))}
-          </div>
+              // OneDrive (Postponed)
+              // {
+              //   id: 'onedrive', name: 'OneDrive', color: 'text-[#0078D4]', bg: 'bg-[#0078D4]/10', border: 'hover:border-[#0078D4]/30', icon: () => (...)
+              // }
+            ].map(p => {
+              const isActive = settings.cloudProvider === p.id;
 
-          <button
-            disabled={isSyncing || settings.cloudProvider === 'none'}
-            onClick={() => handleSync(settings.cloudProvider)}
-            className="w-full py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-bold rounded-xl active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-2"
-          >
-            <RefreshCcw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? t('settings.updating') : t('settings.force_sync')}
-          </button>
+              return (
+                <div
+                  key={p.id}
+                  className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${isActive
+                    ? 'border-indigo-500/50 bg-indigo-50/50 dark:bg-indigo-500/10 dark:border-indigo-500/30 shadow-md ring-1 ring-indigo-500/20'
+                    : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm'
+                    }`}
+                >
+                  <div className="p-4 flex items-start gap-4">
+                    <div className={`p-2.5 rounded-xl shrink-0 ${isActive ? 'bg-white dark:bg-slate-800 shadow-sm' : 'bg-white dark:bg-slate-800'}`}>
+                      <p.icon />
+                    </div>
+
+                    <div className="flex-1 min-w-0 pt-0.5">
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-none">{p.name}</h3>
+                        {isActive && (
+                          <span className="flex items-center gap-1 text-[9px] font-black text-emerald-500 uppercase tracking-wider bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            {t('settings.cloud.connected')}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-[90%]">
+                        {isActive
+                          ? t('settings.cloud.connected_desc', { provider: p.name })
+                          : t('settings.cloud.connect_desc', { provider: p.name })
+                        }
+                      </p>
+
+                      {isActive && settings.lastSync && (
+                        <div className="mt-3 flex items-center gap-1.5 text-[9px] font-medium text-slate-400">
+                          <RefreshCcw className="w-3 h-3 text-slate-300" />
+                          {t('settings.cloud.last_synced')} <span className="text-slate-600 dark:text-slate-300 font-bold">
+                            {settings.lastSync === 'Just now' || settings.lastSync === '刚刚'
+                              ? t('sync.just_now')
+                              : settings.lastSync}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="mt-4 flex items-center gap-2">
+                        {isActive ? (
+                          <>
+                            <button
+                              onClick={() => handleSync(p.id as CloudProvider)}
+                              disabled={isSyncing}
+                              className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 shadow-sm shadow-indigo-200 dark:shadow-none"
+                            >
+                              <RefreshCcw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                              {isSyncing ? t('settings.cloud.syncing') : t('settings.cloud.sync_now')}
+                            </button>
+                            <button
+                              onClick={() => handleSync('none')} // Disconnect
+                              disabled={isSyncing}
+                              className="px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-rose-500 hover:border-rose-200 dark:hover:border-rose-900/50 text-[11px] font-bold rounded-xl transition-all active:scale-95"
+                            >
+                              {t('settings.cloud.disconnect')}
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleSync(p.id as CloudProvider)}
+                            className="w-full py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[11px] font-bold rounded-xl hover:shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+                          >
+                            {t('settings.cloud.connect_account')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
           {/* DEV ONLY BUTTON - Only visible in development mode */}
           {import.meta.env.DEV && CloudService.activeProvider?.isConnected() && (
@@ -637,64 +690,66 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
         </div>
       </div>
 
-      {isPasswordModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-8 animate-in zoom-in-95 duration-200">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">{t('settings.password_modal.title')}</h2>
-            <form onSubmit={handlePasswordChange} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{t('settings.password_modal.current')}</label>
-                <input
-                  type="password"
-                  required
-                  value={passwordForm.old}
-                  onChange={e => setPasswordForm({ ...passwordForm, old: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 outline-none focus:border-indigo-500 transition-all text-sm"
-                />
-              </div>
-              <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{t('settings.password_modal.new')}</label>
-                <input
-                  type="password"
-                  required
-                  value={passwordForm.new}
-                  onChange={e => setPasswordForm({ ...passwordForm, new: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 outline-none focus:border-indigo-500 transition-all text-sm"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{t('settings.password_modal.confirm')}</label>
-                <input
-                  type="password"
-                  required
-                  value={passwordForm.confirm}
-                  onChange={e => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 outline-none focus:border-indigo-500 transition-all text-sm"
-                />
-              </div>
+      {
+        isPasswordModalOpen && (
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-8 animate-in zoom-in-95 duration-200">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">{t('settings.password_modal.title')}</h2>
+              <form onSubmit={handlePasswordChange} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{t('settings.password_modal.current')}</label>
+                  <input
+                    type="password"
+                    required
+                    value={passwordForm.old}
+                    onChange={e => setPasswordForm({ ...passwordForm, old: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 outline-none focus:border-indigo-500 transition-all text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{t('settings.password_modal.new')}</label>
+                  <input
+                    type="password"
+                    required
+                    value={passwordForm.new}
+                    onChange={e => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 outline-none focus:border-indigo-500 transition-all text-sm"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{t('settings.password_modal.confirm')}</label>
+                  <input
+                    type="password"
+                    required
+                    value={passwordForm.confirm}
+                    onChange={e => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 outline-none focus:border-indigo-500 transition-all text-sm"
+                  />
+                </div>
 
-              {error && <p className="text-rose-500 text-[10px] font-bold uppercase text-center pt-2">{error}</p>}
-              {success && <p className="text-emerald-500 text-[10px] font-bold uppercase text-center pt-2">{t('settings.success.password')}</p>}
+                {error && <p className="text-rose-500 text-[10px] font-bold uppercase text-center pt-2">{error}</p>}
+                {success && <p className="text-emerald-500 text-[10px] font-bold uppercase text-center pt-2">{t('settings.success.password')}</p>}
 
-              <div className="flex gap-3 pt-6">
-                <button
-                  type="button"
-                  onClick={() => { setIsPasswordModalOpen(false); setError(null); }}
-                  className="flex-1 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-                >
-                  {t('settings.password_modal.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-black rounded-xl hover:opacity-90 transition-all"
-                >
-                  {t('settings.password_modal.save')}
-                </button>
-              </div>
-            </form>
+                <div className="flex gap-3 pt-6">
+                  <button
+                    type="button"
+                    onClick={() => { setIsPasswordModalOpen(false); setError(null); }}
+                    className="flex-1 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                  >
+                    {t('settings.password_modal.cancel')}
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-black rounded-xl hover:opacity-90 transition-all"
+                  >
+                    {t('settings.password_modal.save')}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-900">
         <div className="flex items-center gap-4">
@@ -720,41 +775,53 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
             {cacheMessage && <span className="text-[9px] font-bold text-emerald-500 animate-in fade-in slide-in-from-left-2 duration-300">{cacheMessage}</span>}
           </div>
         </div>
-        <span className="text-[8px] font-black text-slate-300 dark:text-slate-800 uppercase tracking-[0.5em]">{t('settings.encryption')}</span>
+        <span className="text-[8px] font-black text-slate-300 dark:text-slate-800 uppercase tracking-[0.5em] hidden md:block">{t('settings.encryption')}</span>
       </div>
 
-      {isExportModalOpen && (
-        <ExportModalWrapper
-          onClose={() => setIsExportModalOpen(false)}
-        />
-      )}
+      <div className="md:hidden mt-8 text-center">
+        <span className="text-[9px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.3em] border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-full">
+          VER {appVersion}
+        </span>
+      </div>
 
-      {isImportModalOpen && (
-        <ImportModal
-          onClose={() => setIsImportModalOpen(false)}
-          onImport={async (entries) => {
-            // Let the ImportModal handle the try-catch so it can show the error state
-            for (const entry of entries) {
-              const { id, createdAt, updatedAt, ...rest } = entry;
-              await VaultService.addEntry(rest);
-            }
-            setIsImportModalOpen(false);
-            setSettings({ ...settings, lastSync: 'Imported just now' });
-            onDataChange();
-          }}
-        />
-      )}
+      {
+        isExportModalOpen && (
+          <ExportModalWrapper
+            onClose={() => setIsExportModalOpen(false)}
+          />
+        )
+      }
 
-      {isSyncWarningModalOpen && pendingProvider && (
-        <SyncWarningModal
-          providerName={pendingProvider === 'google' ? 'Google Drive' : pendingProvider}
-          onClose={() => {
-            setIsSyncWarningModalOpen(false);
-            setPendingProvider(null);
-          }}
-          onConfirm={handleSyncConfirm}
-        />
-      )}
+      {
+        isImportModalOpen && (
+          <ImportModal
+            onClose={() => setIsImportModalOpen(false)}
+            onImport={async (entries) => {
+              // Let the ImportModal handle the try-catch so it can show the error state
+              for (const entry of entries) {
+                const { id, createdAt, updatedAt, ...rest } = entry;
+                await VaultService.addEntry(rest);
+              }
+              setIsImportModalOpen(false);
+              setSettings({ ...settings, lastSync: 'Imported just now' });
+              onDataChange();
+            }}
+          />
+        )
+      }
+
+      {
+        isSyncWarningModalOpen && pendingProvider && (
+          <SyncWarningModal
+            providerName={pendingProvider === 'google' ? 'Google Drive' : pendingProvider}
+            onClose={() => {
+              setIsSyncWarningModalOpen(false);
+              setPendingProvider(null);
+            }}
+            onConfirm={handleSyncConfirm}
+          />
+        )
+      }
 
       {/* Salt Conflict Resolution Modal */}
       <SyncConflictModal
@@ -763,73 +830,75 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
         onResolve={handleConflictResolve}
       />
 
-      {isActivityModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setIsActivityModalOpen(false)}>
-          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl h-[600px] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-indigo-50 dark:bg-slate-800 rounded-xl text-indigo-500">
-                  <Activity className="w-5 h-5" />
+      {
+        isActivityModalOpen && (
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setIsActivityModalOpen(false)}>
+            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl h-[600px] flex flex-col rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-indigo-50 dark:bg-slate-800 rounded-xl text-indigo-500">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('settings.activity_modal.title')}</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">~/Library/Logs/EtherVault/main.log</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('settings.activity_modal.title')}</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">~/Library/Logs/EtherVault/main.log</p>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={fetchLogs}
+                    className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                    title={t('settings.activity_modal.refresh')}
+                  >
+                    <RefreshCcw className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setIsActivityModalOpen(false)}
+                    className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={fetchLogs}
-                  className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
-                  title={t('settings.activity_modal.refresh')}
-                >
-                  <RefreshCcw className="w-5 h-5" />
-                </button>
+
+              <div className="flex-1 overflow-auto p-6 bg-slate-50 dark:bg-slate-950 font-mono text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                {activityLogs.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                    <Activity className="w-12 h-12 mb-4 opacity-20" />
+                    <p>{t('settings.activity_modal.empty')}</p>
+                  </div>
+                ) : (
+                  activityLogs.map((log, index) => {
+                    let colorClass = "text-slate-600 dark:text-slate-400";
+                    if (log.includes('[error]') || log.includes('error:')) colorClass = "text-rose-500";
+                    if (log.includes('[warn]') || log.includes('warn:')) colorClass = "text-amber-500";
+                    if (log.includes('[info]') || log.includes('info:')) colorClass = "text-emerald-600 dark:text-emerald-400";
+
+                    // Highlight our custom tags
+                    const highlightedLog = log.replace(/(\[AUTH\]|\[VAULT\]|\[DATA\])/g, '<span class="font-bold text-indigo-500">$1</span>');
+
+                    return (
+                      <div key={index} className={`flex gap-3 border-b border-slate-200/50 dark:border-slate-800/50 pb-1 ${colorClass}`}>
+                        <span className="opacity-50 select-none w-6 text-right">{index + 1}</span>
+                        <span className="break-all" dangerouslySetInnerHTML={{ __html: highlightedLog }} />
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-end">
                 <button
                   onClick={() => setIsActivityModalOpen(false)}
-                  className="p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                  className="px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold rounded-xl hover:opacity-90 transition-all uppercase tracking-wider"
                 >
-                  <X className="w-5 h-5" />
+                  {t('settings.activity_modal.close')}
                 </button>
               </div>
             </div>
-
-            <div className="flex-1 overflow-auto p-6 bg-slate-50 dark:bg-slate-950 font-mono text-[10px] sm:text-xs text-slate-600 dark:text-slate-300 space-y-1">
-              {activityLogs.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-400">
-                  <Activity className="w-12 h-12 mb-4 opacity-20" />
-                  <p>{t('settings.activity_modal.empty')}</p>
-                </div>
-              ) : (
-                activityLogs.map((log, index) => {
-                  let colorClass = "text-slate-600 dark:text-slate-400";
-                  if (log.includes('[error]') || log.includes('error:')) colorClass = "text-rose-500";
-                  if (log.includes('[warn]') || log.includes('warn:')) colorClass = "text-amber-500";
-                  if (log.includes('[info]') || log.includes('info:')) colorClass = "text-emerald-600 dark:text-emerald-400";
-
-                  // Highlight our custom tags
-                  const highlightedLog = log.replace(/(\[AUTH\]|\[VAULT\]|\[DATA\])/g, '<span class="font-bold text-indigo-500">$1</span>');
-
-                  return (
-                    <div key={index} className={`flex gap-3 border-b border-slate-200/50 dark:border-slate-800/50 pb-1 ${colorClass}`}>
-                      <span className="opacity-50 select-none w-6 text-right">{index + 1}</span>
-                      <span className="break-all" dangerouslySetInnerHTML={{ __html: highlightedLog }} />
-                    </div>
-                  );
-                })
-              )}
-            </div>
-
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-end">
-              <button
-                onClick={() => setIsActivityModalOpen(false)}
-                className="px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold rounded-xl hover:opacity-90 transition-all uppercase tracking-wider"
-              >
-                {t('settings.activity_modal.close')}
-              </button>
-            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
