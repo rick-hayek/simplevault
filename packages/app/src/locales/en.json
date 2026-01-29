@@ -18,7 +18,7 @@
     },
     "vault": {
         "title": "Your Vault",
-        "subtitle": "Manage your credentials with industry-grade security.",
+        "subtitle": "Manage your credentials with industry-grade security",
         "add": "ADD CREDENTIAL",
         "sync_prompt": {
             "title": "Sync your vault across devices",
@@ -58,11 +58,15 @@
     },
     "settings": {
         "title": "Settings",
-        "subtitle": "Manage your security and synchronization preferences.",
+        "subtitle": "Manage your security and synchronization preferences",
+        "data_management": "Data Management",
+        "import": "Import",
         "sync_provider": "Sync Provider",
         "updating": "UPDATING...",
         "force_sync": "FORCE SYNC",
         "cloud": {
+            "reconnect": "Resume Connection",
+            "paused": "Paused",
             "connected": "Connected",
             "connected_desc": "Vault is securely synced with {{provider}}.",
             "connect_desc": "Connect to {{provider}} to enable automatic cloud backup and sync.",
@@ -116,7 +120,7 @@
             "cache_cleared": "Cache Cleared!",
             "biometric_enabled": "Biometric unlock enabled"
         },
-        "export": "Export Vault",
+        "export": "Export",
         "clear_cache": "Clear Cache",
         "biometric_modal": {
             "title": "Enable Biometric Unlock",
@@ -156,7 +160,7 @@
     },
     "security": {
         "title": "Security Health",
-        "subtitle": "Real-time analysis of your credential vault.",
+        "subtitle": "Real-time analysis of your credential vault",
         "scan": "FULL SCAN",
         "score": "Score",
         "status": {
@@ -226,5 +230,11 @@
     "sync": {
         "just_now": "Just now",
         "syncing": "Syncing..."
+    },
+    "biometric_prompt": {
+        "title": "Unlock EtherVault",
+        "subtitle": "Use your biometric ID",
+        "reason": "Unlock Vault",
+        "cancel": "Cancel"
     }
 }

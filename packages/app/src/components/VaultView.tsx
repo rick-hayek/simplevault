@@ -262,48 +262,40 @@ export const VaultView: React.FC<VaultViewProps> = ({
               </div>
             </div>
 
-            {/* Compact Mobile List Item with Swipe Actions */}
-            <div className="md:hidden relative rounded-[24px] overflow-hidden my-1 shadow-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-              <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
-                {/* Main Content */}
-                <div
-                  onClick={() => onEdit(entry)}
-                  className="min-w-full snap-center flex items-center gap-4 p-4 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-900 dark:text-slate-100 font-bold shrink-0 border border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm">
-                    {entry.icon ? (
-                      <img src={entry.icon} alt={entry.title} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-lg">{entry.title.charAt(0).toUpperCase()}</span>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-slate-900 dark:text-white text-base truncate leading-tight">{entry.title}</h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1 font-medium">{entry.username}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-300 font-bold rotate-90 tracking-widest">SWIPE</span>
-                    <ChevronRight className="w-5 h-5 text-slate-300 dark:text-slate-600" />
-                  </div>
+            {/* Clean Mobile List Item */}
+            <div className="md:hidden relative rounded-[20px] shadow-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden active:scale-[0.99] transition-all duration-200">
+              <div
+                onClick={() => onEdit(entry)}
+                className="flex items-center gap-4 p-4 active:bg-slate-50 dark:active:bg-slate-800/50 transition-colors cursor-pointer"
+              >
+                {/* Icon */}
+                <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-900 dark:text-slate-100 font-bold shrink-0 border border-slate-100 dark:border-slate-700 overflow-hidden shadow-sm">
+                  {entry.icon ? (
+                    <img src={entry.icon} alt={entry.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-lg">{entry.title.charAt(0).toUpperCase()}</span>
+                  )}
                 </div>
 
-                {/* Swipe Actions */}
-                <div className="flex snap-start">
-                  <button
-                    onClick={() => handleCopy(`${entry.id}_pwd`, entry.password)}
-                    className="w-20 pl-2 bg-indigo-600 flex flex-col items-center justify-center text-white active:bg-indigo-700"
-                  >
-                    {copiedId === `${entry.id}_pwd` ? <Check className="w-6 h-6 mb-1" /> : <Lock className="w-6 h-6 mb-1" />}
-                    <span className="text-[9px] font-bold uppercase">Pass</span>
-                  </button>
-                  <button
-                    onClick={() => handleCopy(entry.id, entry.username)}
-                    className="w-20 bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center text-slate-600 dark:text-slate-300 active:bg-slate-200 dark:active:bg-slate-700"
-                  >
-                    {copiedId === entry.id ? <Check className="w-6 h-6 mb-1" /> : <User className="w-6 h-6 mb-1" />}
-                    <span className="text-[9px] font-bold uppercase">User</span>
-                  </button>
+                {/* Text Content */}
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-slate-900 dark:text-white text-base truncate leading-tight">{entry.title}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1 font-medium">{entry.username}</p>
                 </div>
+
+                {/* Quick Action: Copy Password */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopy(`${entry.id}_pwd`, entry.password);
+                  }}
+                  className={`w-10 h-10 flex items-center justify-center rounded-full transition-all active:scale-95 ${copiedId === `${entry.id}_pwd`
+                    ? 'bg-emerald-500 text-white shadow-emerald-500/30 shadow-md'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                >
+                  {copiedId === `${entry.id}_pwd` ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                </button>
               </div>
             </div>
           </React.Fragment>
@@ -349,21 +341,24 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-900 w-full md:max-w-lg h-[100dvh] md:h-auto md:max-h-[90vh] rounded-none md:rounded-[2rem] border-t md:border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 flex flex-col">
+        <div className="px-6 md:px-8 py-4 md:py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-slate-900 dark:bg-white rounded-xl">
+            <div className="hidden md:flex p-2 bg-slate-900 dark:bg-white rounded-xl">
               <Lock className="w-5 h-5 text-white dark:text-slate-900" />
             </div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{entry ? t('vault.edit_credential') : t('vault.new_credential')}</h2>
+            {/* Mobile Drag Handle */}
+            <div className="md:hidden w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto absolute left-0 right-0 top-3" />
+
+            <h2 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white pt-2 md:pt-0">{entry ? t('vault.edit_credential') : t('vault.new_credential')}</h2>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 -mr-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors bg-white/50 dark:bg-slate-800/50 rounded-full md:bg-transparent">
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-8 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5 overflow-y-auto overscroll-contain pb-safe-area-bottom">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="space-y-2">
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">{t('vault.entry.title')}</label>
@@ -371,7 +366,7 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
                 required
                 value={formData.title}
                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 outline-none focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white font-medium"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3.5 px-4 outline-none focus:border-indigo-500 transition-all text-base md:text-sm text-slate-900 dark:text-white font-medium shadow-sm"
                 placeholder={t('vault.entry.title_placeholder')}
               />
             </div>
@@ -380,7 +375,7 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
               <select
                 value={formData.category}
                 onChange={e => setFormData({ ...formData, category: e.target.value as Category })}
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 outline-none focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white font-medium"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3.5 px-4 outline-none focus:border-indigo-500 transition-all text-base md:text-sm text-slate-900 dark:text-white font-medium shadow-sm"
               >
                 {CATEGORIES.map(c => <option key={c} value={c}>{t(`category.${c.toLowerCase()}`)}</option>)}
               </select>
@@ -394,7 +389,7 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
               <input
                 value={formData.website}
                 onChange={e => setFormData({ ...formData, website: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white font-medium"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:border-indigo-500 transition-all text-base md:text-sm text-slate-900 dark:text-white font-medium shadow-sm"
                 placeholder={t('vault.entry.website_placeholder')}
               />
             </div>
@@ -408,9 +403,20 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
                 required
                 value={formData.username}
                 onChange={e => setFormData({ ...formData, username: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white font-medium"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3.5 pl-12 pr-12 outline-none focus:border-indigo-500 transition-all text-base md:text-sm text-slate-900 dark:text-white font-medium shadow-sm"
                 placeholder={t('vault.entry.username_placeholder')}
               />
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(formData.username || '');
+                  // Optional: Show toast or feedback
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-indigo-500 transition-colors"
+                title={t('common.copy')}
+              >
+                <Copy className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
@@ -422,46 +428,68 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
                 type="text"
                 value={formData.password}
                 onChange={e => setFormData({ ...formData, password: e.target.value })}
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 outline-none focus:border-indigo-500 transition-all text-sm text-slate-900 dark:text-white font-mono"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3.5 pl-12 pr-12 outline-none focus:border-indigo-500 transition-all text-base md:text-sm text-slate-900 dark:text-white font-mono shadow-sm"
                 placeholder={t('vault.entry.password_placeholder')}
               />
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(formData.password || '');
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-indigo-500 transition-colors"
+                title={t('common.copy')}
+              >
+                <Copy className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          <div className="pt-6 flex gap-3">
-            {entry && !showDeleteConfirm && (
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="flex items-center justify-center p-3 rounded-xl border border-rose-100 dark:border-rose-900/30 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            )}
-            {entry && showDeleteConfirm && (
-              <div className="flex items-center gap-2">
+          <div className="pt-6 flex gap-3 pb-8 md:pb-0">
+            {entry && showDeleteConfirm ? (
+              <div className="flex-1 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-200">
                 <button
                   type="button"
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-medium"
+                  className="flex-1 px-4 py-4 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-bold"
                 >
                   {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   type="button"
                   onClick={() => onDelete(entry.id)}
-                  className="px-3 py-2 rounded-xl bg-rose-500 text-white hover:bg-rose-600 transition-all text-sm font-bold"
+                  className="flex-1 px-4 py-4 rounded-xl bg-rose-500 text-white hover:bg-rose-600 transition-all text-sm font-bold shadow-lg shadow-rose-500/20"
                 >
                   {t('common.confirm_delete', 'Delete')}
                 </button>
               </div>
+            ) : (
+              <>
+                {entry && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="flex items-center justify-center px-5 py-4 rounded-xl border border-rose-100 dark:border-rose-900/30 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                >
+                  {t('common.cancel', 'Cancel')}
+                </button>
+
+                <button
+                  type="submit"
+                  className="flex-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-xl font-bold shadow-xl hover:opacity-90 active:scale-[0.98] transition-all"
+                >
+                  {entry ? t('vault.update') : t('vault.save')}
+                </button>
+              </>
             )}
-            <button
-              type="submit"
-              className="flex-1 bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-xl font-bold shadow-lg hover:opacity-90 active:scale-[0.98] transition-all"
-            >
-              {entry ? t('vault.update') : t('vault.save')}
-            </button>
           </div>
         </form>
       </div>

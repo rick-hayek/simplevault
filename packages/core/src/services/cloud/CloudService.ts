@@ -8,6 +8,7 @@ class CloudServiceManager {
     private provider: CloudProviderInterface | null = null;
     private providers: Map<string, CloudProviderInterface> = new Map();
     private logger: Logger | null = null;
+    private listeners: ((isConnected: boolean) => void)[] = [];
 
     constructor() {
         // Register default providers
@@ -42,7 +43,9 @@ class CloudServiceManager {
             return;
         }
         this.provider = provider;
+        this.provider = provider;
         this.log('info', `[CloudService] Switched to provider: ${provider.name}`);
+        this.notifyListeners();
     }
 
     get activeProvider(): CloudProviderInterface | null {
@@ -51,7 +54,29 @@ class CloudServiceManager {
 
     async connect(): Promise<boolean> {
         if (!this.provider) return false;
-        return this.provider.connect();
+        const result = await this.provider.connect();
+        this.notifyListeners();
+        return result;
+    }
+
+    async disconnect() {
+        if (!this.provider) return;
+        await this.provider.disconnect?.();
+        this.notifyListeners();
+    }
+
+    public onConnectionChange(listener: (isConnected: boolean) => void) {
+        this.listeners.push(listener);
+        // Immediate callback with current state
+        listener(this.isSyncEnabled());
+        return () => {
+            this.listeners = this.listeners.filter(l => l !== listener);
+        };
+    }
+
+    private notifyListeners() {
+        const isConnected = this.isSyncEnabled();
+        this.listeners.forEach(l => l(isConnected));
     }
 
     async sync(localEntries: VaultStorageItem[]) {

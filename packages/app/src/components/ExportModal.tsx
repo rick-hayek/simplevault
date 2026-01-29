@@ -28,21 +28,24 @@ export const ExportModal: React.FC<ExportModalProps> = ({ entries, onClose, onEx
     }, [format, entries]);
 
     return (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-end md:items-center justify-center p-0 md:p-4 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 w-full md:max-w-lg h-[100dvh] md:h-auto md:max-h-[90vh] rounded-none md:rounded-[2rem] border-t md:border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 md:zoom-in-95 duration-300 flex flex-col">
+                <div className="px-6 md:px-8 py-4 md:py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-emerald-500/10 rounded-xl">
+                        <div className="hidden md:flex p-2 bg-emerald-500/10 rounded-xl">
                             <Download className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('export.title')}</h2>
+                        {/* Mobile Drag Handle */}
+                        <div className="md:hidden w-12 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mx-auto absolute left-0 right-0 top-3" />
+
+                        <h2 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white pt-2 md:pt-0">{t('export.title')}</h2>
                     </div>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <button onClick={onClose} className="p-2 -mr-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors bg-white/50 dark:bg-slate-800/50 rounded-full md:bg-transparent">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                <div className="p-8 space-y-6 overflow-y-auto max-h-[80vh] custom-scrollbar">
+                <div className="p-6 md:p-8 space-y-6 overflow-y-auto pb-safe-area-bottom scrollbar-hide">
                     <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 flex gap-3">
                         <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
                         <div>
@@ -90,20 +93,28 @@ export const ExportModal: React.FC<ExportModalProps> = ({ entries, onClose, onEx
 
                     <div className="space-y-3">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">{t('export.preview')}</label>
-                        <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 max-h-48 overflow-y-auto custom-scrollbar">
+                        <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 max-h-48 overflow-y-auto scrollbar-hide">
                             <pre className="text-[10px] font-mono text-slate-600 dark:text-slate-400 whitespace-pre-wrap break-all">
                                 {preview}
                             </pre>
                         </div>
                     </div>
 
-                    <button
-                        onClick={() => onExport(format)}
-                        className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                    >
-                        <Download className="w-4 h-4" />
-                        {t('export.download')}
-                    </button>
+                    <div className="flex gap-3 pt-2">
+                        <button
+                            onClick={onClose}
+                            className="px-6 py-4 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+                        >
+                            {t('common.cancel', 'Cancel')}
+                        </button>
+                        <button
+                            onClick={() => onExport(format)}
+                            className="flex-1 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-bold shadow-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                        >
+                            <Download className="w-4 h-4" />
+                            {t('export.download')}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

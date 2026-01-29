@@ -18,7 +18,7 @@
     },
     "vault": {
         "title": "您的密码库",
-        "subtitle": "使用工业级安全标准管理您的凭据。",
+        "subtitle": "使用工业级安全标准管理您的凭据",
         "add": "添加凭据",
         "sync_prompt": {
             "title": "跨设备同步您的保险库",
@@ -58,11 +58,15 @@
     },
     "settings": {
         "title": "设置",
-        "subtitle": "管理您的安全和同步偏好。",
+        "subtitle": "管理您的安全和同步偏好",
+        "data_management": "数据管理",
+        "import": "导入",
         "sync_provider": "同步提供商",
         "updating": "更新中...",
         "force_sync": "强制同步",
         "cloud": {
+            "reconnect": "恢复连接",
+            "paused": "已暂停",
             "connected": "已连接",
             "connected_desc": "您的密码库已与 {{provider}} 同步。",
             "connect_desc": "连接到 {{provider}} 以开启自动云端备份和同步。",
@@ -116,7 +120,7 @@
             "cache_cleared": "缓存已清理!",
             "biometric_enabled": "生物识别解锁已启用"
         },
-        "export": "导出密码库",
+        "export": "导出",
         "clear_cache": "清除缓存",
         "biometric_modal": {
             "title": "启用生物识别解锁",
@@ -156,7 +160,7 @@
     },
     "security": {
         "title": "安全状况",
-        "subtitle": "针对您密码库的实时安全分析。",
+        "subtitle": "针对您密码库的实时安全分析",
         "scan": "全面扫描",
         "score": "评分",
         "status": {
@@ -226,5 +230,11 @@
     "sync": {
         "just_now": "刚刚",
         "syncing": "同步中..."
+    },
+    "biometric_prompt": {
+        "title": "解锁 EtherVault",
+        "subtitle": "使用您的生物识别 ID",
+        "reason": "解锁密码库",
+        "cancel": "取消"
     }
 }

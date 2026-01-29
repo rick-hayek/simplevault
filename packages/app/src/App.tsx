@@ -22,6 +22,8 @@ import {
 } from '@premium-password-manager/core';
 import { AlertProvider } from './hooks/useAlert';
 
+import { App as CapacitorApp } from '@capacitor/app';
+
 // Initialize Cloud Logging with App Logger (Universal)
 CloudService.setLogger(logger);
 
@@ -59,10 +61,14 @@ const App: React.FC = () => {
   useEffect(() => {
     if (settings.cloudProvider !== 'none') {
       localStorage.setItem('ethervault_cloud_provider', settings.cloudProvider);
-      // Initialize CloudService with the saved provider (no connection yet)
+      // Initialize CloudService with the saved provider
       CloudService.useProvider(settings.cloudProvider);
     } else {
       localStorage.removeItem('ethervault_cloud_provider');
+      // Ensure we explicitly disconnect so the service stops syncing
+      CloudService.disconnect().catch(e => {
+        logger.warn('[App] Failed to disconnect cloud provider', e);
+      });
     }
   }, [settings.cloudProvider]);
 
@@ -131,6 +137,47 @@ const App: React.FC = () => {
     }
   }, [settings.theme]);
 
+  // Handle Android Back Button
+  useEffect(() => {
+    CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+      // 1. Close Swiped Rows (Priority)
+      const swipedElements = document.querySelectorAll('.overflow-x-auto');
+      let swipeClosed = false;
+      swipedElements.forEach((el) => {
+        if (el.scrollLeft > 0) {
+          el.scrollTo({ left: 0, behavior: 'smooth' });
+          swipeClosed = true;
+        }
+      });
+      if (swipeClosed) return;
+
+      // 2. Close Modal
+      if (isModalOpen) {
+        setIsModalOpen(false);
+        return;
+      }
+
+      // 3. Clear Search
+      if (searchQuery) {
+        setSearchQuery('');
+        return;
+      }
+
+      // 4. Navigate to Home
+      if (currentView !== 'vault') {
+        setCurrentView('vault');
+        return;
+      }
+
+      // 5. Default: Minimize App (Android)
+      CapacitorApp.minimizeApp();
+    });
+
+    return () => {
+      CapacitorApp.removeAllListeners();
+    };
+  }, [isModalOpen, searchQuery, currentView]);
+
   const allTags = useMemo(() => {
     const tags = new Set<string>();
     passwords.forEach(p => p.tags?.forEach(t => tags.add(t)));
@@ -151,6 +198,13 @@ const App: React.FC = () => {
   // Auto-sync to cloud after local changes (if cloud is enabled)
   const syncToCloud = async () => {
     if (settings.cloudProvider === 'none') return;
+
+    console.log("isSyncEnabled", CloudService.isSyncEnabled());
+    // Fix: Don't log "completed" if we aren't even connected
+    if (!CloudService.isSyncEnabled()) {
+      return;
+    }
+
     try {
       const entries = await VaultService.getEncryptedEntries();
       await CloudService.sync(entries);
@@ -327,6 +381,8 @@ const App: React.FC = () => {
         />;
     }
   };
+
+
 
   return (
     <Layout

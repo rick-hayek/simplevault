@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { NativeBiometric } from '@capgo/capacitor-native-biometric';
+import i18next from '../i18n';
 
 // Electron API Interface (from preload)
 declare global {
@@ -52,12 +53,16 @@ export class BiometricService {
         if (this.isNative) {
             try {
                 // First verify identity
-                await NativeBiometric.verifyIdentity({
+                const bioOptions = {
                     reason: reason,
-                    title: 'Unlock EtherVault',
-                    subtitle: 'Use your biometric ID',
-                    description: reason,
-                });
+                    title: i18next.t('biometric_prompt.title') || 'Unlock EtherVault',
+                    subtitle: i18next.t('biometric_prompt.subtitle') || 'Use your biometric ID',
+                    description: i18next.t('biometric_prompt.reason') || reason,
+                    negativeButtonText: i18next.t('biometric_prompt.cancel') || 'Cancel',
+                };
+                console.log('[Bio] Verify options:', bioOptions);
+
+                await NativeBiometric.verifyIdentity(bioOptions as any);
 
                 // Then get credentials
                 const credentials = await NativeBiometric.getCredentials({

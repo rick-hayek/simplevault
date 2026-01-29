@@ -1,7 +1,6 @@
 
 import React, { useMemo, useState } from 'react';
 import { ShieldAlert, ShieldCheck, RefreshCcw, AlertCircle } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { PasswordEntry, SecurityService } from '@premium-password-manager/core';
 
@@ -18,11 +17,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ passwords,
     return SecurityService.performAudit(passwords);
   }, [passwords]);
 
-  const chartData = [
-    { name: t('security.stats.weak'), value: audit.weakCount, color: '#f43f5e' },
-    { name: t('security.stats.secure_strong'), value: audit.secureCount, color: '#10b981' },
-    { name: t('security.stats.other'), value: passwords.length - audit.weakCount - audit.secureCount, color: '#f59e0b' },
-  ];
+
 
   const getStatusText = (score: number) => {
     if (score > 80) return t('security.status.robust');
@@ -33,9 +28,9 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ passwords,
   return (
     <div className="space-y-4 md:space-y-5 pb-6">
       <div className="flex items-center justify-between">
-        <div className="hidden md:block">
+        <div className="block">
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('security.title')}</h1>
-          <p className="hidden md:block text-slate-500 dark:text-slate-400 text-xs mt-0.5">{t('security.subtitle')}</p>
+          <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{t('security.subtitle')}</p>
         </div>
         <button
           onClick={() => {
@@ -53,80 +48,55 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ passwords,
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-8 bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-          <div className="flex flex-col sm:flex-row items-center gap-8 relative">
-            <div className="relative w-40 h-40 md:w-44 md:h-44 flex items-center justify-center shrink-0 p-2">
-              <svg className="w-full h-full transform -rotate-90 overflow-visible" viewBox="0 0 100 100">
-                <circle
-                  cx="50" cy="50" r="44"
-                  fill="none" stroke="currentColor" strokeWidth="8"
-                  className="text-slate-100 dark:text-slate-800"
-                  strokeLinecap="round"
-                />
-                <circle
-                  cx="50" cy="50" r="44"
-                  fill="none" stroke="currentColor" strokeWidth="8"
-                  strokeDasharray={2 * Math.PI * 44}
-                  strokeDashoffset={2 * Math.PI * 44 * (1 - audit.score / 100)}
-                  strokeLinecap="round"
-                  className="text-emerald-500 transition-all duration-1000 ease-out shadow-sm drop-shadow-md"
-                />
-              </svg>
-              <div className="absolute text-center">
-                <span className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white block tracking-tighter">{audit.score}</span>
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('security.score')}</span>
-              </div>
-            </div>
-
-            <div className="flex-1 text-center sm:text-left space-y-4">
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('security.status.title')}</h3>
-                <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed max-w-sm mx-auto sm:mx-0 font-medium">
-                  {getStatusText(audit.score)}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 max-w-sm mx-auto sm:mx-0">
-                <div className="px-3 py-3 bg-rose-50 dark:bg-rose-500/5 rounded-2xl border border-rose-100 dark:border-rose-500/10 text-center">
-                  <span className="block text-xl font-black text-rose-500">{audit.weakCount}</span>
-                  <span className="text-[9px] font-bold text-rose-400 uppercase tracking-wider">{t('security.stats.weak')}</span>
-                </div>
-                <div className="px-3 py-3 bg-amber-50 dark:bg-amber-500/5 rounded-2xl border border-amber-100 dark:border-amber-500/10 text-center">
-                  <span className="block text-xl font-black text-amber-500">{audit.reusedCount}</span>
-                  <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">{t('security.stats.reused')}</span>
-                </div>
-                <div className="px-3 py-3 bg-emerald-50 dark:bg-emerald-500/5 rounded-2xl border border-emerald-100 dark:border-emerald-500/10 text-center">
-                  <span className="block text-xl font-black text-emerald-500">{audit.secureCount}</span>
-                  <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">{t('security.stats.safe')}</span>
-                </div>
-              </div>
+        <div className="flex flex-col sm:flex-row items-center gap-8 relative">
+          <div className="relative w-40 h-40 md:w-44 md:h-44 flex items-center justify-center shrink-0 p-2">
+            <svg className="w-full h-full transform -rotate-90 overflow-visible" viewBox="0 0 100 100">
+              <circle
+                cx="50" cy="50" r="44"
+                fill="none" stroke="currentColor" strokeWidth="8"
+                className="text-slate-100 dark:text-slate-800"
+                strokeLinecap="round"
+              />
+              <circle
+                cx="50" cy="50" r="44"
+                fill="none" stroke="currentColor" strokeWidth="8"
+                strokeDasharray={2 * Math.PI * 44}
+                strokeDashoffset={2 * Math.PI * 44 * (1 - audit.score / 100)}
+                strokeLinecap="round"
+                className="text-emerald-500 transition-all duration-1000 ease-out shadow-sm drop-shadow-md"
+              />
+            </svg>
+            <div className="absolute text-center">
+              <span className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white block tracking-tighter">{audit.score}</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{t('security.score')}</span>
             </div>
           </div>
-        </div>
 
-        <div className="lg:col-span-4 bg-white dark:bg-slate-900 p-6 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col items-center justify-center min-h-[200px]">
-          <div className="w-full h-40">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={chartData} cx="50%" cy="50%" innerRadius={45} outerRadius={60} paddingAngle={5} dataKey="value" stroke="none">
-                  {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', fontSize: '11px', fontWeight: 'bold' }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="flex flex-wrap justify-center gap-3 mt-4">
-            {chartData.map((item) => (
-              <div key={item.name} className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full ring-2 ring-opacity-20 ring-gray-500" style={{ backgroundColor: item.color }} />
-                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{item.name}</span>
+          <div className="flex-1 text-center sm:text-left space-y-4">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('security.status.title')}</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed max-w-sm mx-auto sm:mx-0 font-medium">
+                {getStatusText(audit.score)}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 max-w-sm mx-auto sm:mx-0">
+              <div className="px-3 py-3 bg-rose-50 dark:bg-rose-500/5 rounded-2xl border border-rose-100 dark:border-rose-500/10 text-center">
+                <span className="block text-xl font-black text-rose-500">{audit.weakCount}</span>
+                <span className="text-[9px] font-bold text-rose-400 uppercase tracking-wider">{t('security.stats.weak')}</span>
               </div>
-            ))}
+              <div className="px-3 py-3 bg-amber-50 dark:bg-amber-500/5 rounded-2xl border border-amber-100 dark:border-amber-500/10 text-center">
+                <span className="block text-xl font-black text-amber-500">{audit.reusedCount}</span>
+                <span className="text-[9px] font-bold text-amber-400 uppercase tracking-wider">{t('security.stats.reused')}</span>
+              </div>
+              <div className="px-3 py-3 bg-emerald-50 dark:bg-emerald-500/5 rounded-2xl border border-emerald-100 dark:border-emerald-500/10 text-center">
+                <span className="block text-xl font-black text-emerald-500">{audit.secureCount}</span>
+                <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">{t('security.stats.safe')}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -151,8 +121,8 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ passwords,
             </div>
           ) : (
             audit.alerts.map((alert, index) => (
-              <div key={index} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                <div className="flex items-start gap-4 w-full sm:w-auto sm:flex-1 sm:min-w-0">
+              <div key={index} className="p-4 flex items-center justify-between gap-3 group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${alert.severity === 'high' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-500' : 'bg-amber-50 dark:bg-amber-500/10 text-amber-500'
                     }`}>
                     <AlertCircle className="w-5 h-5" />
@@ -165,7 +135,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ passwords,
                           ? t('security.alerts.reused_title', { count: alert.count })
                           : alert.title}
                     </h4>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug break-words">
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug break-words line-clamp-2">
                       {alert.type === 'weak'
                         ? t('security.alerts.weak_description')
                         : alert.type === 'reused'
@@ -178,7 +148,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ passwords,
                 </div>
                 <button
                   onClick={() => alert.entryIds.length > 0 && onResolve(alert.entryIds[0])}
-                  className="w-full sm:w-auto shrink-0 text-[10px] font-bold text-white bg-emerald-500 hover:bg-emerald-600 px-5 py-2.5 rounded-xl shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+                  className="shrink-0 text-[10px] font-bold text-white bg-emerald-500 hover:bg-emerald-600 px-3 py-2 rounded-xl shadow-sm shadow-emerald-500/20 active:scale-95 transition-all"
                 >
                   {t('security.alerts.resolve')}
                 </button>
