@@ -20,6 +20,7 @@ import {
   X
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { BiometricService } from '../utils/BiometricService';
 import { AppSettings, CloudProvider, AuthService, VaultService, CloudService } from '@premium-password-manager/core';
 import { ImportModal } from './ImportModal';
 import { ExportModal } from './ExportModal';
@@ -59,6 +60,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
   const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
   const [conflictCloudMeta, setConflictCloudMeta] = useState<{ salt: string; verifier: string } | null>(null);
   const [localEntryCount, setLocalEntryCount] = useState(0);
+
+  // Biometric Modal State
+  const [isBioModalOpen, setIsBioModalOpen] = useState(false);
+  const [bioPassword, setBioPassword] = useState('');
+  const [bioError, setBioError] = useState<string | null>(null);
 
   useEffect(() => {
     // Runtime check for version (Desktop overrides Web build version)
@@ -185,8 +191,53 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
     );
   };
 
-  const toggleBiometrics = () => {
-    setSettings({ ...settings, biometricsEnabled: !settings.biometricsEnabled });
+  const toggleBiometrics = async () => {
+    // If disabling
+    if (settings.biometricsEnabled) {
+      const success = await BiometricService.deleteSecret();
+      if (success) {
+        setSettings({ ...settings, biometricsEnabled: false });
+        localStorage.removeItem('ethervault_bio'); // Clear legacy flag if any
+      } else {
+        showError(t('settings.error.failed'));
+      }
+      return;
+    }
+
+    // If enabling, check if available first
+    const available = await BiometricService.isAvailable();
+    if (!available) {
+      showError(t('settings.error.no_bio', 'Biometrics not available on this device.'));
+      return;
+    }
+
+    // Open modal to get password
+    setIsBioModalOpen(true);
+    setBioPassword('');
+    setBioError(null);
+  };
+
+  const handleBioConfirm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBioError(null);
+
+    // Verify password against current auth
+    const isValid = await AuthService.verifyPassword(bioPassword);
+    if (!isValid) {
+      setBioError(t('settings.error.incorrect'));
+      return;
+    }
+
+    // Save secret
+    const success = await BiometricService.saveSecret(bioPassword);
+    if (success) {
+      setSettings({ ...settings, biometricsEnabled: true });
+      localStorage.setItem('ethervault_bio', 'true'); // legacy/flag
+      setIsBioModalOpen(false);
+      showSuccess(t('settings.success.biometric_enabled'));
+    } else {
+      setBioError(t('settings.error.failed'));
+    }
   };
 
   const connectToProvider = async (provider: CloudProvider) => {
@@ -783,6 +834,60 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
           VER {appVersion}
         </span>
       </div>
+
+      {
+        isBioModalOpen && (
+          <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-8 animate-in zoom-in-95 duration-200">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                  <Fingerprint className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{t('settings.biometric_modal.title')}</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('settings.biometric_modal.description')}</p>
+                </div>
+              </div>
+
+              <form onSubmit={handleBioConfirm} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pl-1">{t('login.master_password')}</label>
+                  <div className="relative">
+                    <input
+                      type="password"
+                      required
+                      value={bioPassword}
+                      onChange={e => setBioPassword(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 outline-none focus:border-indigo-500 transition-all text-sm font-bold"
+                      placeholder={t('login.unlock_placeholder')}
+                      autoFocus
+                    />
+                    <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  </div>
+                </div>
+
+                {bioError && <p className="text-rose-500 text-[10px] font-bold uppercase text-center pt-2">{bioError}</p>}
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => { setIsBioModalOpen(false); setBioError(null); }}
+                    className="flex-1 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black rounded-xl hover:shadow-lg transition-all active:scale-95"
+                  >
+                    {t('settings.biometric_modal.enable')}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )
+      }
 
       {
         isExportModalOpen && (

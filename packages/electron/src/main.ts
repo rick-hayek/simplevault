@@ -271,3 +271,70 @@ ipcMain.handle('app-clear-cache', async () => {
 ipcMain.handle('app-get-version', () => {
     return app.getVersion();
 });
+
+// Biometric / SafeStorage IPC
+import { safeStorage, systemPreferences } from 'electron';
+
+ipcMain.handle('biometrics-is-available', () => {
+    return safeStorage.isEncryptionAvailable();
+});
+
+ipcMain.handle('biometrics-save', async (event, secret: string) => {
+    if (!safeStorage.isEncryptionAvailable()) return false;
+    try {
+        const encrypted = safeStorage.encryptString(secret);
+        const filePath = path.join(app.getPath('userData'), 'biometric_secret.enc');
+        await fs.promises.writeFile(filePath, encrypted);
+        return true;
+    } catch (error) {
+        log.error('Failed to save biometric secret:', error);
+        return false;
+    }
+});
+
+ipcMain.handle('biometrics-retrieve', async (event, reason: string) => {
+    if (!safeStorage.isEncryptionAvailable()) return null;
+
+    // On macOS, prompt for Touch ID
+    if (process.platform === 'darwin') {
+        const canPrompt = await systemPreferences.canPromptTouchID();
+        if (canPrompt) {
+            try {
+                await systemPreferences.promptTouchID(reason || 'Unlock your vault');
+            } catch (error) {
+                log.warn('Touch ID failed or cancelled:', error);
+                return null;
+            }
+        }
+    }
+
+    try {
+        const filePath = path.join(app.getPath('userData'), 'biometric_secret.enc');
+        if (!fs.existsSync(filePath)) return null;
+
+        const buffer = await fs.promises.readFile(filePath);
+        const decrypted = safeStorage.decryptString(buffer);
+        return decrypted;
+    } catch (error) {
+        log.error('Failed to retrieve biometric secret:', error);
+        return null;
+    }
+});
+
+ipcMain.handle('biometrics-delete', async () => {
+    try {
+        const filePath = path.join(app.getPath('userData'), 'biometric_secret.enc');
+        if (fs.existsSync(filePath)) {
+            await fs.promises.unlink(filePath);
+        }
+        return true;
+    } catch (error) {
+        log.error('Failed to delete biometric secret:', error);
+        return false;
+    }
+});
+
+ipcMain.handle('biometrics-check-saved', async () => {
+    const filePath = path.join(app.getPath('userData'), 'biometric_secret.enc');
+    return fs.existsSync(filePath);
+});

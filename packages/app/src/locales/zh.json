@@ -113,10 +113,16 @@
         },
         "success": {
             "password": "密码修改成功",
-            "cache_cleared": "缓存已清理!"
+            "cache_cleared": "缓存已清理!",
+            "biometric_enabled": "生物识别解锁已启用"
         },
         "export": "导出密码库",
-        "clear_cache": "清除缓存"
+        "clear_cache": "清除缓存",
+        "biometric_modal": {
+            "title": "启用生物识别解锁",
+            "description": "请输入您的主密码以便将其安全存储在设备钥匙串中。",
+            "enable": "启用"
+        }
     },
     "export": {
         "title": "导出密码库",

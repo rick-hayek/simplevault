@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Lock, Fingerprint, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { BiometricService } from '../utils/BiometricService';
 
 interface LoginViewProps {
   onLogin: (masterKey: string) => Promise<boolean> | boolean;
@@ -24,12 +25,23 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin, bioEnabled }) => 
     }
   };
 
-  const handleBioAuth = () => {
+  const handleBioAuth = async () => {
     setIsBioLoading(true);
-    setTimeout(() => {
-      onLogin(localStorage.getItem('ethervault_master') || '');
+    try {
+      const secret = await BiometricService.retrieveSecret();
+      if (secret) {
+        const success = await onLogin(secret);
+        if (!success) {
+          setError(true);
+          setTimeout(() => setError(false), 2000);
+        }
+      }
+    } catch (e) {
+      console.error('Bio auth failed', e);
+      setError(true);
+    } finally {
       setIsBioLoading(false);
-    }, 1000);
+    }
   };
 
   return (

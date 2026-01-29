@@ -113,10 +113,16 @@
         },
         "success": {
             "password": "Password changed successfully",
-            "cache_cleared": "Cache Cleared!"
+            "cache_cleared": "Cache Cleared!",
+            "biometric_enabled": "Biometric unlock enabled"
         },
         "export": "Export Vault",
-        "clear_cache": "Clear Cache"
+        "clear_cache": "Clear Cache",
+        "biometric_modal": {
+            "title": "Enable Biometric Unlock",
+            "description": "Enter your master password to securely store it in your device's keychain.",
+            "enable": "Enable Biometrics"
+        }
     },
     "export": {
         "title": "Export Vault",

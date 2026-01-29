@@ -17,6 +17,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     utils: {
         fetchIcon: (url: string) => ipcRenderer.invoke('fetch-icon', url),
         getRedirectUrl: (url: string) => ipcRenderer.invoke('get-redirect-url', url),
+    },
+    biometrics: {
+        isAvailable: () => ipcRenderer.invoke('biometrics-is-available'),
+        saveSecret: (secret: string) => ipcRenderer.invoke('biometrics-save', secret),
+        retrieveSecret: (reason: string) => ipcRenderer.invoke('biometrics-retrieve', reason),
+        deleteSecret: () => ipcRenderer.invoke('biometrics-delete'),
+        hasSavedSecret: () => ipcRenderer.invoke('biometrics-check-saved'),
     }
 });
 
