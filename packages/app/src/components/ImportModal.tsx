@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { VaultService, PasswordEntry, SecurityService, Category } from '@ethervault/core';
 import { useTranslation } from 'react-i18next';
 import { Upload, FileText, Check, AlertCircle, X, Loader2 } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { MobileFileService } from '../utils/MobileFileService';
 
 interface ImportModalProps {
     onClose: () => void;
@@ -33,60 +35,56 @@ export const ImportModal: React.FC<ImportModalProps> = ({ onClose, onImport }) =
         }
     };
 
+    const processString = (content: string, filename: string) => {
+        try {
+            // 1. Check for binary content (null bytes)
+            if (content.includes('\0')) {
+                throw new Error(t('import.error_binary') || 'Binary file detected');
+            }
+
+            let entries: PasswordEntry[] = [];
+
+            if (filename.endsWith('.json')) {
+                const raw = JSON.parse(content);
+                if (Array.isArray(raw)) {
+                    entries = raw.map(mapRawToEntry);
+                } else if (raw && typeof raw === 'object' && !('ciphertext' in raw)) {
+                    entries = [mapRawToEntry(raw)];
+                } else {
+                    throw new Error(t('import.error_format') || 'Invalid JSON format');
+                }
+            } else if (filename.endsWith('.csv')) {
+                entries = parseCSV(content);
+            } else {
+                throw new Error(t('import.error_type') || 'Unsupported file format');
+            }
+
+            if (entries.length === 0) {
+                throw new Error(t('import.error_empty') || 'No valid entries found');
+            }
+
+            const taggedEntries = entries.map(e => ({
+                ...e,
+                category: 'Others' as Category,
+                tags: [...(e.tags || []), `Imported ${new Date().toLocaleDateString()}`]
+            }));
+
+            setParsedEntries(taggedEntries);
+            setStatus('ready');
+        } catch (err: any) {
+            console.error(err);
+            setStatus('error');
+            setErrorMsg(err.message || 'Failed to parse file');
+        }
+    };
+
     const processFile = (file: File) => {
         setStatus('reading');
         setErrorMsg('');
         const reader = new FileReader();
 
         reader.onload = (event) => {
-            try {
-                const content = event.target?.result as string;
-
-                // 1. Check for binary content (null bytes)
-                // Common in images, zips, executables
-                if (content.includes('\0')) {
-                    throw new Error(t('import.error_binary') || 'Binary file detected');
-                }
-
-                let entries: PasswordEntry[] = [];
-
-                if (file.name.endsWith('.json')) {
-                    const raw = JSON.parse(content);
-
-                    // Handle both top-level array and new backup format or single object
-                    if (Array.isArray(raw)) {
-                        entries = raw.map(mapRawToEntry);
-                    } else if (raw && typeof raw === 'object' && !('ciphertext' in raw)) {
-                        // Allow importing a single entry directly
-                        entries = [mapRawToEntry(raw)];
-                    } else {
-                        // Attempt to extract from backup object if structure changes
-                        throw new Error(t('import.error_format') || 'Invalid JSON format');
-                    }
-                } else if (file.name.endsWith('.csv')) {
-                    entries = parseCSV(content);
-                } else {
-                    throw new Error(t('import.error_type') || 'Unsupported file format');
-                }
-
-                if (entries.length === 0) {
-                    throw new Error(t('import.error_empty') || 'No valid entries found');
-                }
-
-                // Tag entries
-                const taggedEntries = entries.map(e => ({
-                    ...e,
-                    category: 'Others' as Category, // Default to Others for safety
-                    tags: [...(e.tags || []), `Imported ${new Date().toLocaleDateString()}`]
-                }));
-
-                setParsedEntries(taggedEntries);
-                setStatus('ready');
-            } catch (err: any) {
-                console.error(err);
-                setStatus('error');
-                setErrorMsg(err.message || 'Failed to parse file');
-            }
+            processString(event.target?.result as string, file.name);
         };
 
         reader.onerror = () => {
@@ -95,6 +93,22 @@ export const ImportModal: React.FC<ImportModalProps> = ({ onClose, onImport }) =
         };
 
         reader.readAsText(file);
+    };
+
+    const handleMobilePick = async () => {
+        try {
+            const result = await MobileFileService.pickFile();
+            if (result) {
+                setStatus('reading');
+                processString(result.content, result.name);
+            }
+        } catch (e: any) {
+            // Error handling handled in service?
+            if (e.message) {
+                setStatus('error');
+                setErrorMsg(e.message);
+            }
+        }
     };
 
     const handleImportClick = async () => {
@@ -213,7 +227,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({ onClose, onImport }) =
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
-                        onClick={() => status !== 'importing' && fileInputRef.current?.click()}
+                        onClick={() => {
+                            if (status === 'importing') return;
+                            if (Capacitor.isNativePlatform()) {
+                                handleMobilePick();
+                            } else {
+                                fileInputRef.current?.click();
+                            }
+                        }}
                         className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${isDragOver
                             ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
                             : 'border-slate-200 dark:border-slate-800 hover:border-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'

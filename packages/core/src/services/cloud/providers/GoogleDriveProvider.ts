@@ -101,12 +101,13 @@ export class GoogleDriveProvider implements CloudProviderInterface {
         try {
             this.log('info', '[GoogleDrive] Exchanging code for token...');
 
-            const isIos = Capacitor.getPlatform() === 'ios';
-            const targetClientId = (isIos ? this.iosClientId : this.androidClientId) || this.clientId;
+            const isNative = Capacitor.isNativePlatform();
+            // Use iOS Client ID for both Android and iOS to support Custom URI Schemes
+            const targetClientId = (isNative && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
 
             // Redirect URI must match exactly what was sent in auth request
             let redirectUri = `com.ethervault.app:/oauth2redirect`;
-            if (isIos && this.iosClientId) {
+            if (isNative && this.iosClientId) {
                 const reversedId = this.iosClientId.split('.').reverse().join('.');
                 redirectUri = `${reversedId}:/oauth2redirect`;
             }
@@ -134,6 +135,14 @@ export class GoogleDriveProvider implements CloudProviderInterface {
             const tokens = await res.json();
             this.accessToken = tokens.access_token;
             this.tokenExpiresAt = Date.now() + (tokens.expires_in * 1000);
+
+            // Persist tokens
+            localStorage.setItem('gdrive_access_token', this.accessToken || '');
+            localStorage.setItem('gdrive_token_expiry', this.tokenExpiresAt.toString());
+            if (tokens.refresh_token) {
+                localStorage.setItem('gdrive_refresh_token', tokens.refresh_token);
+            }
+
             this.connected = true;
 
             this.log('info', '[GoogleDrive] Native Connected via PKCE! Token received.');
@@ -144,17 +153,85 @@ export class GoogleDriveProvider implements CloudProviderInterface {
         }
     }
 
+    private async restoreSession(): Promise<boolean> {
+        const storedAccessToken = localStorage.getItem('gdrive_access_token');
+        const storedExpiry = localStorage.getItem('gdrive_token_expiry');
+        const storedRefreshToken = localStorage.getItem('gdrive_refresh_token');
+
+        if (storedAccessToken && storedExpiry) {
+            if (parseInt(storedExpiry) > Date.now() + 60000) {
+                this.accessToken = storedAccessToken;
+                this.tokenExpiresAt = parseInt(storedExpiry);
+                this.connected = true;
+                this.log('info', '[GoogleDrive] Restored valid session from storage.');
+                return true;
+            }
+        }
+
+        if (storedRefreshToken) {
+            this.log('info', '[GoogleDrive] Access token expired, refreshing...');
+            return await this.refreshAccessToken(storedRefreshToken);
+        }
+
+        return false;
+    }
+
+    private async refreshAccessToken(refreshToken: string): Promise<boolean> {
+        try {
+            const isNative = Capacitor.isNativePlatform();
+            const targetClientId = (isNative && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
+
+            const body = new URLSearchParams({
+                client_id: targetClientId,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const res = await fetch('https://oauth2.googleapis.com/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            });
+
+            if (!res.ok) {
+                this.log('error', '[GoogleDrive] Refresh failed. Clearing storage.');
+                localStorage.removeItem('gdrive_access_token');
+                localStorage.removeItem('gdrive_token_expiry');
+                localStorage.removeItem('gdrive_refresh_token');
+                return false;
+            }
+
+            const tokens = await res.json();
+            this.accessToken = tokens.access_token;
+            this.tokenExpiresAt = Date.now() + (tokens.expires_in * 1000);
+
+            localStorage.setItem('gdrive_access_token', this.accessToken || '');
+            localStorage.setItem('gdrive_token_expiry', this.tokenExpiresAt.toString());
+            if (tokens.refresh_token) {
+                localStorage.setItem('gdrive_refresh_token', tokens.refresh_token);
+            }
+
+            this.connected = true;
+            this.log('info', '[GoogleDrive] Session refreshed successfully.');
+            return true;
+        } catch (e) {
+            this.log('error', '[GoogleDrive] Refresh exception:', e);
+            return false;
+        }
+    }
+
     async connectNative(): Promise<boolean> {
         this.log('info', '[GoogleDrive] Starting Native Auth (PKCE)...');
         try {
             this.pkceVerifier = generateVerifier();
             const challenge = await generateChallenge(this.pkceVerifier);
 
-            const isIos = Capacitor.getPlatform() === 'ios';
-            const targetClientId = (isIos ? this.iosClientId : this.androidClientId) || this.clientId;
+            const isNative = Capacitor.isNativePlatform();
+            // info: Use iOS Client ID for both Android and iOS to support Custom URI Schemes
+            const targetClientId = (isNative && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
 
             let redirectUri = `com.ethervault.app:/oauth2redirect`;
-            if (isIos && this.iosClientId) {
+            if (isNative && this.iosClientId) {
                 const reversedId = this.iosClientId.split('.').reverse().join('.');
                 redirectUri = `${reversedId}:/oauth2redirect`;
             }
@@ -167,7 +244,9 @@ export class GoogleDriveProvider implements CloudProviderInterface {
                 `&redirect_uri=${encodeURIComponent(redirectUri)}` +
                 `&scope=${encodeURIComponent(this.scope)}` +
                 `&code_challenge=${encodeURIComponent(challenge)}` +
-                `&code_challenge_method=S256`;
+                `&code_challenge_method=S256` +
+                `&access_type=offline` +
+                `&prompt=consent`;
 
             await Browser.open({ url: authUrl });
 
@@ -182,6 +261,11 @@ export class GoogleDriveProvider implements CloudProviderInterface {
     }
 
     async connect(): Promise<boolean> {
+        // Try to restore session first (Mobile ONLY, to avoid affecting Desktop)
+        if (Capacitor.isNativePlatform() && await this.restoreSession()) {
+            return true;
+        }
+
         if (Capacitor.isNativePlatform()) {
             return this.connectNative();
         }
@@ -322,6 +406,12 @@ export class GoogleDriveProvider implements CloudProviderInterface {
 
     async disconnect(): Promise<void> {
         this.log('info', '[GoogleDrive] Disconnecting...');
+
+        // Clear persistence
+        localStorage.removeItem('gdrive_access_token');
+        localStorage.removeItem('gdrive_token_expiry');
+        localStorage.removeItem('gdrive_refresh_token');
+
         if (this.accessToken) {
             // Revoke token if needed
             window.google?.accounts?.oauth2?.revoke(this.accessToken, () => {

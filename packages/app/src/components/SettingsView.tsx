@@ -30,6 +30,7 @@ import { SyncWarningModal } from './SyncWarningModal';
 import { SyncConflictModal, ConflictResolution } from './SyncConflictModal';
 import { useAlert } from '../hooks/useAlert';
 import { useBackHandler } from '../hooks/useBackHandler';
+import { MobileFileService } from '../utils/MobileFileService';
 
 interface SettingsViewProps {
   settings: AppSettings;
@@ -50,6 +51,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
 
   // Connection State
   const [cloudConnected, setCloudConnected] = useState(() => CloudService.isSyncEnabled());
+
+  // Password Change State
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordChangeStatus, setPasswordChangeStatus] = useState('');
 
   useEffect(() => {
     // Subscribe to CloudService connection changes
@@ -199,6 +204,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
               content = [headers.join(','), ...rows].join('\n');
             }
 
+            // Mobile Native Export
+            if (await MobileFileService.exportFile(filename, content)) {
+              showSuccess(t('export.success_mobile', 'Export successful! Saved to device storage (Downloads/Documents).'));
+              onClose();
+              return;
+            }
+
             const blob = new Blob([content], { type: format === 'json' ? 'application/json' : 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -210,8 +222,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
             URL.revokeObjectURL(url);
 
             onClose();
-          } catch (err) {
+          } catch (err: any) {
             console.error('Export failed', err);
+            showError(err.message || 'Export failed');
           }
         }}
       />
@@ -486,6 +499,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
           );
           return;
         }
+
+        if (err.message?.includes('SALT_CONFLICT')) {
+          logger.warn('[SettingsView] Salt conflict detected during sync. Triggering resolution flow.');
+          connectToProvider(settings.cloudProvider);
+          return;
+        }
         console.error('Sync failed', err);
         logger.error('[SettingsView] Sync failed', err);
 
@@ -528,20 +547,44 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
       return;
     }
 
+    setIsChangingPassword(true);
+    setPasswordChangeStatus(t('settings.status.encrypting', 'Re-encrypting vault...'));
+
     try {
+      // Allow UI to update
+      await new Promise(r => setTimeout(r, 50));
+
       const result = await AuthService.changeMasterPassword(passwordForm.old, passwordForm.new);
       if (result) {
+        // Fix: If cloud is connected, we must clear old data as key has changed
+        if (CloudService.isSyncEnabled()) {
+          try {
+            setPasswordChangeStatus(t('settings.status.resyncing', 'Syncing new data to cloud...'));
+            await CloudService.clearRemoteData();
+            const entries = await VaultService.getEncryptedEntries();
+            await CloudService.sync(entries);
+            logger.info('[SettingsView] Cloud data reset and re-synced after password change.');
+          } catch (e) {
+            logger.error('[SettingsView] Failed to reset cloud after password change', e);
+          }
+        }
+
         setSuccess(true);
+        setPasswordChangeStatus(t('settings.status.done', 'Done!'));
         setTimeout(() => {
           setIsPasswordModalOpen(false);
           setPasswordForm({ old: '', new: '', confirm: '' });
           setSuccess(false);
-        }, 2000);
+          setIsChangingPassword(false);
+          setPasswordChangeStatus('');
+        }, 1500);
       } else {
         setError(t('settings.error.incorrect'));
+        setIsChangingPassword(false);
       }
     } catch (err: any) {
       setError(err.message || t('settings.error.failed'));
+      setIsChangingPassword(false);
     }
   };
 
@@ -854,7 +897,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
         {
           isPasswordModalOpen && (
             <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-8 animate-in zoom-in-95 duration-200">
+              <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-8 animate-in zoom-in-95 duration-200">
+
+                {/* Loading Overlay */}
+                {isChangingPassword && (
+                  <div className="absolute inset-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 animate-in fade-in duration-200 p-6 text-center">
+                    <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mb-4" />
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{t('settings.processing', 'Processing...')}</h3>
+                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{passwordChangeStatus}</p>
+                  </div>
+                )}
+
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">{t('settings.password_modal.title')}</h2>
                 <form onSubmit={handlePasswordChange} className="space-y-4">
                   <div className="space-y-1.5">

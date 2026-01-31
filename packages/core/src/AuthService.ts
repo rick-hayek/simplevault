@@ -44,7 +44,9 @@ export class AuthService {
                         return true;
                     }
                 } catch {
-                    return false; // Decryption failed = Wrong Password
+                    // FIX: Don't fail immediately. Verifier might be stale (e.g. after bug).
+                    // Fall through to legacy check to see if we can decrypt the vault.
+                    console.warn('[AUTH] Verifier failed. Falling back to vault decryption check.');
                 }
             }
 
@@ -141,6 +143,10 @@ export class AuthService {
 
         // 4. Update metadata
         await StorageService.setItem('metadata', 'salt', newSalt);
+
+        // FIX: Update Verifier with new key
+        const { ciphertext, nonce } = CryptoService.encrypt('VALID', newKey);
+        await StorageService.setItem('metadata', 'auth_verifier', { payload: ciphertext, nonce });
 
         // 5. Update session
         this.masterKey = newKey;
