@@ -9,7 +9,7 @@
         "dev": "tsc && electron .",
         "watch": "tsc -w",
         "build": "npm run build:main && npm run build:preload",
-        "build:main": "tsc",
+        "build:main": "esbuild src/main.ts --bundle --platform=node --target=node18 --external:electron --outfile=dist/main.js",
         "build:preload": "esbuild src/preload.ts --bundle --platform=node --target=node18 --external:electron --outfile=dist/preload.js",
         "type-check": "tsc --noEmit",
         "dist": "npm run build && electron-builder",
@@ -45,6 +45,14 @@
                 "zip"
             ]
         },
+        "protocols": [
+            {
+                "name": "EtherVault",
+                "schemes": [
+                    "com.ethervault.app"
+                ]
+            }
+        ],
         "dmg": {
             "contents": [
                 {
