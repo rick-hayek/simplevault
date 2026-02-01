@@ -263,7 +263,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ onClose, onImport }) =
                             {status === 'ready' ? t('import.ready', { count: parsedEntries.length }) :
                                 status === 'importing' ? t('import.importing') :
                                     status === 'error' ? t('import.error') :
-                                        t('import.drag_drop')}
+                                        Capacitor.isNativePlatform() ? t('import.click_to_select') : t('import.drag_drop')}
                         </p>
                         <p className="text-xs text-slate-400">
                             {status === 'error' ? errorMsg : t('import.formats')}

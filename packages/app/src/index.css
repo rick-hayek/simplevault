@@ -3,6 +3,21 @@
 @tailwind utilities;
 
 @layer base {
+
+  html,
+  body,
+  #root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    /* Prevent text selection on mobile app feel */
+    -webkit-user-select: none;
+    user-select: none;
+    /* Prevent callout menu */
+    -webkit-touch-callout: none;
+  }
+
   :root {
     --background: 255 255 255;
     --foreground: 15 23 42;

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { logger } from './utils/logger';
 import { IconService } from './utils/IconService';
 import { Layout } from './components/Layout';
@@ -21,9 +22,38 @@ import { App as CapacitorApp } from '@capacitor/app';
 // Initialize Cloud Logging with App Logger (Universal)
 CloudService.setLogger(logger);
 
+// Animation Configuration
+const VIEW_ORDER = ['vault', 'security', 'generator', 'settings'];
+
+const variants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? '100%' : '-100%',
+    opacity: 1
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1
+  },
+  exit: (direction: number) => ({
+    zIndex: 0,
+    x: direction < 0 ? '100%' : '-100%',
+    opacity: 1
+  })
+};
+
 const AppContent: React.FC = () => {
   // const [isDarkMode, setIsDarkMode] = useState<boolean>(true); // Removed redundant state
   const [currentView, setCurrentView] = useState<'vault' | 'security' | 'generator' | 'settings'>('vault');
+  const [direction, setDirection] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
   const [activeCategory, setActiveCategory] = useState<Category>('All');
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -45,7 +75,7 @@ const AppContent: React.FC = () => {
       biometricsEnabled: localStorage.getItem('ethervault_bio') === 'true',
       autoLockTimeout: 15,
       twoFactorEnabled: true,
-      theme: 'dark',
+      theme: 'system',
       cloudProvider: savedProvider || 'none',
       lastSync: ''
     };
@@ -141,10 +171,34 @@ const AppContent: React.FC = () => {
 
   // Unified Theme Effect
   useEffect(() => {
-    if (settings.theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    const applyTheme = () => {
+      let isDark = false;
+      if (settings.theme === 'system') {
+        isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      } else {
+        isDark = settings.theme === 'dark';
+      }
+
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+
+    applyTheme();
+
+    if (settings.theme === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handler = (e: MediaQueryListEvent) => {
+        if (e.matches) document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      };
+
+      // Modern browsers support addEventListener, older might need addListener (deprecated)
+      // Capacitor WebView is modern.
+      mediaQuery.addEventListener('change', handler);
+      return () => mediaQuery.removeEventListener('change', handler);
     }
   }, [settings.theme]);
 
@@ -183,6 +237,14 @@ const AppContent: React.FC = () => {
     CapacitorApp.minimizeApp();
     return true;
   });
+
+  const handleSetView = (newView: typeof currentView) => {
+    const currentIndex = VIEW_ORDER.indexOf(currentView);
+    const newIndex = VIEW_ORDER.indexOf(newView);
+    const dir = newIndex > currentIndex ? 1 : -1;
+    setDirection(dir);
+    setCurrentView(newView);
+  };
 
 
 
@@ -395,7 +457,7 @@ const AppContent: React.FC = () => {
   return (
     <Layout
       currentView={currentView}
-      setView={setCurrentView}
+      setView={handleSetView}
       isDarkMode={settings.theme === 'dark'}
       toggleDarkMode={() => setSettings({ ...settings, theme: settings.theme === 'dark' ? 'light' : 'dark' })}
       onLock={handleLock}
@@ -403,9 +465,26 @@ const AppContent: React.FC = () => {
       searchQuery={searchQuery}
       onAddClick={handleOpenAdd}
     >
-      <div className="max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
-        {renderView()}
-      </div>
+      {isMobile ? (
+        <AnimatePresence mode="popLayout" custom={direction} initial={false}>
+          <motion.div
+            key={currentView}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ x: { type: "spring", stiffness: 300, damping: 30 } }}
+            className="max-w-7xl mx-auto w-full"
+          >
+            {renderView()}
+          </motion.div>
+        </AnimatePresence>
+      ) : (
+        <div className="max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+          {renderView()}
+        </div>
+      )}
 
       {isModalOpen && (
         <EntryModal

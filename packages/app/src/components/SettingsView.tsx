@@ -473,13 +473,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
 
         const entries = await VaultService.getEncryptedEntries();
 
-        // Race sync against timeout logic (using shared constant)
-        const syncPromise = CloudService.sync(entries);
-        const timeoutPromise = new Promise<any>((_, reject) =>
-          setTimeout(() => reject(new Error('SYNC_TIMEOUT')), NETWORK_TIMEOUT_MS)
-        );
+        // // Race sync against timeout logic (using shared constant)
+        // const syncPromise = CloudService.sync(entries);
+        // const timeoutPromise = new Promise<any>((_, reject) =>
+        //   setTimeout(() => reject(new Error('SYNC_TIMEOUT')), NETWORK_TIMEOUT_MS)
+        // );
 
-        const result = await Promise.race([syncPromise, timeoutPromise]);
+        // const result = await Promise.race([syncPromise, timeoutPromise]);
+
+        // Directly await sync, allowing it to take as long as needed for large batches
+        // We removed the artificial timeout because batch uploads can take minutes
+        const result = await CloudService.sync(entries);
 
         if (result && result.updatedEntries.length > 0) {
           await VaultService.processCloudEntries(result.updatedEntries);
@@ -604,7 +608,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
           <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all duration-300 shadow-sm ${value ? 'right-1' : 'left-1'}`} />
         </div>
       ) : (
-        <button onClick={(e) => { e.stopPropagation(); onClick?.(); }} disabled={!onClick} className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase disabled:cursor-default px-2 py-1">
+        <button onClick={(e) => { e.stopPropagation(); onClick?.(); }} disabled={!onClick} className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 capitalize disabled:cursor-default px-2 py-1">
           {value}
         </button>
       )}
@@ -613,7 +617,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
 
   return (
     <div className="min-h-full">
-      <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm px-4 pt-[calc(env(safe-area-inset-top)+16px)] pb-2 md:sticky md:px-8 md:pt-8 md:pb-4 transition-all">
+      <div className="sticky top-0 z-30 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm px-4 pt-[calc(env(safe-area-inset-top)+4px)] pb-2 md:sticky md:px-8 md:pt-8 md:pb-4 transition-all">
         <div className="flex items-center justify-between">
           <div className="block">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('settings.title')}</h1>
@@ -810,7 +814,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
                 </div>
               </div>
-              <CompactSetting icon={Moon} label={t('settings.option.dark_mode')} value={settings.theme === 'dark'} onClick={() => setSettings({ ...settings, theme: settings.theme === 'dark' ? 'light' : 'dark' })} />
+              <CompactSetting
+                icon={Moon}
+                label={t('settings.option.appearance', 'Appearance')}
+                value={
+                  settings.theme === 'system' ? t('settings.theme.system', 'System') :
+                    settings.theme === 'light' ? t('settings.theme.light', 'Light') :
+                      t('settings.theme.dark', 'Dark')
+                }
+                type="value"
+                onClick={() => {
+                  const next = settings.theme === 'dark' ? 'light' : (settings.theme === 'light' ? 'system' : 'dark');
+                  setSettings({ ...settings, theme: next });
+                }}
+              />
               <CompactSetting icon={Languages} label={t('settings.option.language')} value={i18n.language === 'zh' ? '中文' : 'ENGLISH'} type="value" onClick={() => i18n.changeLanguage(i18n.language === 'zh' ? 'en' : 'zh')} />
 
               {/* Master Log Settings */}

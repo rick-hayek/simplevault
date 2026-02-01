@@ -93,7 +93,13 @@
                 "30m": "30 MINS",
                 "1h": "1 HR"
             },
-            "recent_activity": "Recent Activity"
+            "recent_activity": "Recent Activity",
+            "appearance": "Appearance"
+        },
+        "theme": {
+            "system": "System",
+            "light": "Light",
+            "dark": "Dark"
         },
         "activity_modal": {
             "title": "System Log",
@@ -123,6 +129,7 @@
         },
         "export": "Export",
         "clear_cache": "Clear Cache",
+        "clear_cache_desc": "This will remove local logs and temporary data. Your vault data will NOT be deleted.",
         "biometric_modal": {
             "title": "Enable Biometric Unlock",
             "description": "Enter your master password to securely store it in your device's keychain.",
@@ -139,7 +146,8 @@
     },
     "import": {
         "title": "Import Vault",
-        "drag_drop": "Drag & Drop CSV/JSON here",
+        "drag_drop": "Drag & Drop CSV/JSON here or Click to Select",
+        "click_to_select": "Tap to Select CSV/JSON File",
         "formats": "Supported formats: .csv, .json",
         "ready": "Found {{count}} entries. Ready!",
         "error": "Import Failed",

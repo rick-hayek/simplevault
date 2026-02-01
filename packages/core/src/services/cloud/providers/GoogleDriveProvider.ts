@@ -510,7 +510,6 @@ export class GoogleDriveProvider implements CloudProviderInterface {
     }
 
     async uploadEntry(entry: VaultStorageItem, knownFileId?: string): Promise<boolean> {
-        console.log(`uploadEntry: this.connected: ${this.connected}`);
         if (!this.connected || !this.accessToken) return false;
         // console.log(`[GoogleDrive] Uploading entry: ${entry.id}`); // Reduce noise
 

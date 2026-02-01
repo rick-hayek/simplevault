@@ -68,7 +68,7 @@ export const BottomTabNav: React.FC<BottomTabNavProps> = ({ currentView, setView
                         onClick={onAddClick}
                         className="flex items-center justify-center w-12 h-12 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg shadow-slate-900/10 dark:shadow-white/10 active:scale-95 transition-all"
                     >
-                        <Plus className="w-6 h-6" />
+                        <Plus className="w-4 h-4" />
                     </button>
                 )}
 

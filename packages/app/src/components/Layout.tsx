@@ -175,7 +175,7 @@ export const Layout: React.FC<LayoutProps> = ({
 
       {/* Mobile Header (Clean & Minimal) - Only show on Vault view */}
       {!['generator', 'security', 'settings'].includes(currentView) && (
-        <header className="md:hidden flex items-center pt-[calc(env(safe-area-inset-top)+16px)] pb-4 bg-slate-50 dark:bg-slate-950 shrink-0 z-30 px-4 titlebar transition-all duration-300 min-h-[60px]">
+        <header className="md:hidden flex items-center pt-[calc(env(safe-area-inset-top)+4px)] pb-4 bg-slate-50 dark:bg-slate-950 shrink-0 z-30 px-4 titlebar transition-all duration-300 min-h-[60px]">
           {isSearchMode ? (
             <div className="flex-1 flex items-center gap-3 animate-in fade-in slide-in-from-right-5 duration-200">
               <Search className="w-5 h-5 text-slate-400 shrink-0" />
@@ -212,10 +212,10 @@ export const Layout: React.FC<LayoutProps> = ({
                   </button>
                 )}
                 <button
-                  onClick={toggleDarkMode}
-                  className="p-2 -mr-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                  onClick={onLock}
+                  className="p-2 -mr-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors"
                 >
-                  {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  <LogOut className="w-5 h-5" />
                 </button>
               </div>
             </>

@@ -24,6 +24,7 @@
     "@capgo/capacitor-native-biometric": "^8.3.2",
     "@ethervault/core": "*",
     "clsx": "^2.1.0",
+    "framer-motion": "^12.29.2",
     "i18next": "^23.10.0",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",

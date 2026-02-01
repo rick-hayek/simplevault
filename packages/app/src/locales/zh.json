@@ -93,7 +93,13 @@
                 "30m": "30 分钟",
                 "1h": "1 小时"
             },
-            "recent_activity": "近期活动"
+            "recent_activity": "近期活动",
+            "appearance": "外观"
+        },
+        "theme": {
+            "system": "跟随系统",
+            "light": "浅色",
+            "dark": "深色"
         },
         "activity_modal": {
             "title": "系统日志",
@@ -123,6 +129,7 @@
         },
         "export": "导出",
         "clear_cache": "清除缓存",
+        "clear_cache_desc": "这将清除本地日志和临时数据，但不会删除您的密码数据。",
         "biometric_modal": {
             "title": "启用生物识别解锁",
             "description": "请输入您的主密码以便将其安全存储在设备钥匙串中。",
@@ -139,7 +146,8 @@
     },
     "import": {
         "title": "导入密码库",
-        "drag_drop": "拖拽 CSV/JSON 到此处",
+        "drag_drop": "拖拽 CSV/JSON 到此处或点击此处选择文件",
+        "click_to_select": "点击选择 CSV/JSON 文件",
         "formats": "支持格式: .csv, .json",
         "ready": "发现 {{count}} 条数据。准备就绪！",
         "error": "导入失败",
