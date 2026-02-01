@@ -130,7 +130,11 @@ class CloudServiceManager {
      */
     async handleRedirect(url: string): Promise<boolean> {
         if (!this.provider) return false;
-        return (this.provider as any).handleRedirect?.(url) ?? false;
+        const result = await (this.provider as any).handleRedirect?.(url) ?? false;
+        if (result) {
+            this.notifyListeners();
+        }
+        return result;
     }
 }
 

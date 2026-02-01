@@ -62,6 +62,32 @@ function createWindow() {
         },
     });
 
+    // Open external links (target="_blank") in system browser
+    mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+        // Dev Mode: Allow Google Auth Popups to open internal windows (required for GSI Web Client)
+        if (!app.isPackaged && (url.includes('accounts.google.com') || url.includes('googleusercontent.com'))) {
+            return {
+                action: 'allow',
+                overrideBrowserWindowOptions: {
+                    autoHideMenuBar: true,
+                    center: true,
+                    width: 600,
+                    height: 700,
+                    webPreferences: {
+                        nodeIntegration: false,
+                        contextIsolation: true
+                    }
+                }
+            };
+        }
+
+        // Production / Other Links: Force System Browser
+        if (url.startsWith('http:') || url.startsWith('https:')) {
+            shell.openExternal(url);
+        }
+        return { action: 'deny' };
+    });
+
     // In development, load from Vite dev server
     if (process.env.NODE_ENV === 'development') {
         mainWindow.loadURL('http://localhost:3000');
@@ -141,7 +167,23 @@ if (!gotTheLock) {
         }
     });
 
+    // Handle Deep Links on macOS (Packaged App)
+    app.on('open-url', (event, url) => {
+        event.preventDefault();
+        log.info('Deep Link Received (macOS):', url);
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.show();
+            mainWindow.webContents.send('deep-link', url);
+        }
+    });
+
     app.whenReady().then(() => {
+        // Register Custom Protocol (macOS) - ONLY in production
+        if (app.isPackaged && !app.isDefaultProtocolClient('com.ethervault.app')) {
+            app.setAsDefaultProtocolClient('com.ethervault.app');
+        }
+
         createWindow();
         createTray();
         registerShortcuts();
@@ -274,6 +316,14 @@ ipcMain.handle('app-get-version', () => {
 
 // Biometric / SafeStorage IPC
 import { safeStorage, systemPreferences } from 'electron';
+
+ipcMain.handle('app-is-packaged', () => {
+    return app.isPackaged;
+});
+
+ipcMain.handle('app-open-external', async (event, url: string) => {
+    await shell.openExternal(url);
+});
 
 ipcMain.handle('biometrics-is-available', () => {
     return safeStorage.isEncryptionAvailable();

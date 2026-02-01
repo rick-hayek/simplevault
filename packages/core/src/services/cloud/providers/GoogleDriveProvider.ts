@@ -97,13 +97,22 @@ export class GoogleDriveProvider implements CloudProviderInterface {
         return this.exchangeCodeForToken(code);
     }
 
+    private isElectron(): boolean {
+        try {
+            return typeof window !== 'undefined' && !!(window as any).electronAPI;
+        } catch {
+            return false;
+        }
+    }
+
     async exchangeCodeForToken(code: string): Promise<boolean> {
         try {
             this.log('info', '[GoogleDrive] Exchanging code for token...');
 
             const isNative = Capacitor.isNativePlatform();
-            // Use iOS Client ID for both Android and iOS to support Custom URI Schemes
-            const targetClientId = (isNative && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
+            const isElectron = this.isElectron();
+            // Use iOS Client ID for both Android/iOS and Electron to support Custom URI Schemes
+            const targetClientId = ((isNative || isElectron) && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
 
             // Redirect URI must match exactly what was sent in auth request
             let redirectUri = `com.ethervault.app:/oauth2redirect`;
@@ -163,7 +172,8 @@ export class GoogleDriveProvider implements CloudProviderInterface {
                 this.accessToken = storedAccessToken;
                 this.tokenExpiresAt = parseInt(storedExpiry);
                 this.connected = true;
-                this.log('info', '[GoogleDrive] Restored valid session from storage.');
+                this.connected = true;
+                this.log('info', '[GoogleDrive] Restored valid session from storage (Access Token).');
                 return true;
             }
         }
@@ -179,7 +189,8 @@ export class GoogleDriveProvider implements CloudProviderInterface {
     private async refreshAccessToken(refreshToken: string): Promise<boolean> {
         try {
             const isNative = Capacitor.isNativePlatform();
-            const targetClientId = (isNative && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
+            const isElectron = this.isElectron();
+            const targetClientId = ((isNative || isElectron) && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
 
             const body = new URLSearchParams({
                 client_id: targetClientId,
@@ -212,7 +223,8 @@ export class GoogleDriveProvider implements CloudProviderInterface {
             }
 
             this.connected = true;
-            this.log('info', '[GoogleDrive] Session refreshed successfully.');
+            this.connected = true;
+            this.log('info', '[GoogleDrive] Session refreshed successfully (Refresh Token).');
             return true;
         } catch (e) {
             this.log('error', '[GoogleDrive] Refresh exception:', e);
@@ -227,8 +239,9 @@ export class GoogleDriveProvider implements CloudProviderInterface {
             const challenge = await generateChallenge(this.pkceVerifier);
 
             const isNative = Capacitor.isNativePlatform();
-            // info: Use iOS Client ID for both Android and iOS to support Custom URI Schemes
-            const targetClientId = (isNative && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
+            const isElectron = this.isElectron();
+            // info: Use iOS Client ID for both Android and iOS directly. Electron also uses it for Native Auth.
+            const targetClientId = ((isNative || isElectron) && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
 
             let redirectUri = `com.ethervault.app:/oauth2redirect`;
             if (isNative && this.iosClientId) {
@@ -248,12 +261,13 @@ export class GoogleDriveProvider implements CloudProviderInterface {
                 `&access_type=offline` +
                 `&prompt=consent`;
 
-            await Browser.open({ url: authUrl });
-
-            // Identify that we are waiting for a redirect
-            // For now, return "true" to signal the process started. 
-            // In a real app, we might want to return a Promise that resolves on redirect.
-            return true;
+            if (isElectron) {
+                await (window as any).electronAPI.openExternal(authUrl);
+                return true;
+            } else {
+                await Browser.open({ url: authUrl });
+                return true;
+            }
         } catch (error) {
             this.log('error', '[GoogleDrive] Native Auth start failed:', error);
             return false;
@@ -261,105 +275,125 @@ export class GoogleDriveProvider implements CloudProviderInterface {
     }
 
     async connect(): Promise<boolean> {
-        // Try to restore session first (Mobile ONLY, to avoid affecting Desktop)
-        if (Capacitor.isNativePlatform() && await this.restoreSession()) {
-            return true;
-        }
-
-        if (Capacitor.isNativePlatform()) {
-            return this.connectNative();
-        }
-
-        if (this.connected && this.accessToken) {
-            this.log('info', '[GoogleDrive] Already connected.');
-            return true;
-        }
-
-        this.log('info', '[GoogleDrive] Starting connection flow...');
-
         try {
-            // 1. Load Google Identity Services (GIS) and GAPI
-            await this.loadScript('https://accounts.google.com/gsi/client');
-            await this.loadScript('https://apis.google.com/js/api.js');
-
-            if (!window.google || !window.google.accounts) {
-                this.log('error', '[GoogleDrive] Google Identity Services not available.');
-                return false;
+            // Try to restore session first (Mobile AND Electron)
+            // We now allow Electron to restore sessions too, as it uses the same localStorage mechanism
+            if ((Capacitor.isNativePlatform() || this.isElectron()) && await this.restoreSession()) {
+                return true;
             }
 
-            // 2. Initialize Token Client
-            this.log('info', '[GoogleDrive] Initializing Token Client...');
-            return new Promise((resolve) => {
-                // Variable to hold popup reference (assigned during request)
-                let authPopup: Window | null = null;
+            const isElectron = this.isElectron();
+            let isPackaged = false;
 
-                const timeoutId = setTimeout(() => {
-                    this.log('error', `[GoogleDrive] Auth timed out(${NETWORK_TIMEOUT_MS}ms)`);
-                    if (authPopup) {
-                        this.log('info', '[GoogleDrive] Closing auth popup due to timeout.');
-                        authPopup.close();
-                    }
-                    resolve(false);
-                }, NETWORK_TIMEOUT_MS);
-
-                this.tokenClient = window.google.accounts.oauth2.initTokenClient({
-                    client_id: this.clientId,
-                    scope: this.scope,
-                    callback: (response: any) => {
-                        clearTimeout(timeoutId);
-
-                        if (response.error) {
-                            this.log('error', '[GoogleDrive] Auth Error:', response);
-                            resolve(false);
-                            return;
-                        }
-
-                        this.accessToken = response.access_token;
-                        // #19: Store token expiration time (typically 1 hour)
-                        this.tokenExpiresAt = Date.now() + (response.expires_in || 3600) * 1000;
-
-                        // Check Scopes
-                        const hasScope = window.google?.accounts?.oauth2?.hasGrantedAllScopes(
-                            response,
-                            this.scope
-                        );
-
-                        if (!hasScope) {
-                            this.log('warn', '[GoogleDrive] WARNING: drive.appdata scope NOT granted by user!');
-                        } else {
-                            this.log('info', '[GoogleDrive] drive.appdata scope confirmed.');
-                        }
-
-                        this.connected = true;
-                        this.log('info', '[GoogleDrive] Connected! Token received.');
-                        resolve(true);
-                    },
-                });
-
-                // 3. Trigger Popup (use empty prompt for seamless reconnection if token cached)
-                this.log('info', '[GoogleDrive] Requesting Access Token...');
-
-                // Intercept window.open to capture popup reference strictly for timeout handling
-                {
-                    const originalOpen = window.open;
-                    window.open = (...args) => {
-                        const win = originalOpen(...args);
-                        authPopup = win;
-                        return win;
-                    };
-
-                    try {
-                        this.tokenClient.requestAccessToken({ prompt: '' });
-                    } finally {
-                        // Restore original window.open after a short delay
-                        setTimeout(() => {
-                            window.open = originalOpen;
-                        }, 500);
-                    }
+            if (isElectron) {
+                try {
+                    isPackaged = await (window as any).electronAPI.isPackaged();
+                    this.log('info', `[GoogleDrive] Environment: Electron (Packaged: ${isPackaged})`);
+                } catch (e) {
+                    this.log('warn', '[GoogleDrive] Failed to check if packaged, assuming false');
                 }
-            });
-        } catch (e) {
-            console.error('[GoogleDrive] Initialization failed:', e);
+            }
+
+            // Native Platform OR Packaged Electron -> Use Native Flow (Deep Links)
+            if (Capacitor.isNativePlatform() || (isElectron && isPackaged)) {
+                return this.connectNative();
+            }
+
+            // Dev Mode Electron or Web -> Use Popup Flow
+            if (this.connected && this.accessToken) {
+                this.log('info', '[GoogleDrive] Already connected.');
+                return true;
+            }
+
+            this.log('info', '[GoogleDrive] Starting connection flow...');
+
+            try {
+                // 1. Load Google Identity Services (GIS) and GAPI
+                await this.loadScript('https://accounts.google.com/gsi/client');
+                await this.loadScript('https://apis.google.com/js/api.js');
+
+                if (!window.google || !window.google.accounts) {
+                    this.log('error', '[GoogleDrive] Google Identity Services not available.');
+                    return false;
+                }
+
+                // 2. Initialize Token Client
+                this.log('info', '[GoogleDrive] Initializing Token Client...');
+                return new Promise((resolve) => {
+                    // Variable to hold popup reference (assigned during request)
+                    let authPopup: Window | null = null;
+
+                    const timeoutId = setTimeout(() => {
+                        this.log('error', `[GoogleDrive] Auth timed out(${NETWORK_TIMEOUT_MS}ms)`);
+                        if (authPopup) {
+                            this.log('info', '[GoogleDrive] Closing auth popup due to timeout.');
+                            authPopup.close();
+                        }
+                        resolve(false);
+                    }, NETWORK_TIMEOUT_MS);
+
+                    this.tokenClient = window.google.accounts.oauth2.initTokenClient({
+                        client_id: this.clientId,
+                        scope: this.scope,
+                        callback: (response: any) => {
+                            clearTimeout(timeoutId);
+
+                            if (response.error) {
+                                this.log('error', '[GoogleDrive] Auth Error:', response);
+                                resolve(false);
+                                return;
+                            }
+
+                            this.accessToken = response.access_token;
+                            // #19: Store token expiration time (typically 1 hour)
+                            this.tokenExpiresAt = Date.now() + (response.expires_in || 3600) * 1000;
+
+                            // Check Scopes
+                            const hasScope = window.google?.accounts?.oauth2?.hasGrantedAllScopes(
+                                response,
+                                this.scope
+                            );
+
+                            if (!hasScope) {
+                                this.log('warn', '[GoogleDrive] WARNING: drive.appdata scope NOT granted by user!');
+                            } else {
+                                this.log('info', '[GoogleDrive] drive.appdata scope confirmed.');
+                            }
+
+                            this.connected = true;
+                            this.log('info', '[GoogleDrive] Connected! Token received.');
+                            resolve(true);
+                        },
+                    });
+
+                    // 3. Trigger Popup (use empty prompt for seamless reconnection if token cached)
+                    this.log('info', '[GoogleDrive] Requesting Access Token...');
+
+                    // Intercept window.open to capture popup reference strictly for timeout handling
+                    {
+                        const originalOpen = window.open;
+                        window.open = (...args) => {
+                            const win = originalOpen(...args);
+                            authPopup = win;
+                            return win;
+                        };
+
+                        try {
+                            this.tokenClient.requestAccessToken({ prompt: '' });
+                        } finally {
+                            // Restore original window.open after a short delay
+                            setTimeout(() => {
+                                window.open = originalOpen;
+                            }, 500);
+                        }
+                    }
+                });
+            } catch (e) {
+                this.log('error', '[GoogleDrive] Initialization failed:', e);
+                return false;
+            }
+        } catch (criticalError) {
+            this.log('error', '[GoogleDrive] CRITICAL CONNECT FAILURE:', criticalError);
             return false;
         }
     }
@@ -406,7 +440,6 @@ export class GoogleDriveProvider implements CloudProviderInterface {
 
     async disconnect(): Promise<void> {
         this.log('info', '[GoogleDrive] Disconnecting...');
-
         // Clear persistence
         localStorage.removeItem('gdrive_access_token');
         localStorage.removeItem('gdrive_token_expiry');
@@ -422,6 +455,57 @@ export class GoogleDriveProvider implements CloudProviderInterface {
         this.tokenExpiresAt = 0;
         this.connected = false;
         console.log(`disconnect: this.connected: ${this.connected} `);
+    }
+
+    /**
+     * Helper to handle automatic token refresh on expiry or 401
+     */
+    private async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+        // 1. Pre-emptive Refresh
+        if (!this.isTokenValid()) {
+            this.log('info', '[GoogleDrive] Token expired or close to expiry. Refreshing before request...');
+            const storedRefreshToken = localStorage.getItem('gdrive_refresh_token');
+            if (storedRefreshToken) {
+                const refreshed = await this.refreshAccessToken(storedRefreshToken);
+                if (!refreshed) {
+                    this.log('warn', '[GoogleDrive] Pre-emptive refresh failed.');
+                    // Proceed anyway, maybe the current token still works? Or let it fail 401.
+                }
+            }
+        }
+
+        // Ensure Authorization header is set
+        const headers = new Headers(options.headers);
+        headers.set('Authorization', `Bearer ${this.accessToken}`);
+
+        const finalOptions = {
+            ...options,
+            headers
+        };
+
+        let response = await fetch(url, finalOptions);
+
+        // 2. Reactive Refresh (401 Retry)
+        if (response.status === 401) {
+            this.log('info', '[GoogleDrive] Received 401. Attempting token refresh...');
+            const storedRefreshToken = localStorage.getItem('gdrive_refresh_token');
+            if (storedRefreshToken) {
+                const refreshed = await this.refreshAccessToken(storedRefreshToken);
+                if (refreshed) {
+                    // Update auth header with new token
+                    headers.set('Authorization', `Bearer ${this.accessToken}`);
+                    const retryOptions = {
+                        ...options,
+                        headers
+                    };
+                    response = await fetch(url, retryOptions);
+                } else {
+                    this.log('error', '[GoogleDrive] Refresh failed after 401. Session invalid.');
+                }
+            }
+        }
+
+        return response;
     }
 
     /**
@@ -474,11 +558,8 @@ export class GoogleDriveProvider implements CloudProviderInterface {
         const entries: VaultStorageItem[] = [];
 
         try {
-            // List all files in appDataFolder
             const listUrl = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name)&pageSize=1000`;
-            const listRes = await fetch(listUrl, {
-                headers: { 'Authorization': `Bearer ${this.accessToken}` }
-            });
+            const listRes = await this.authenticatedFetch(listUrl);
 
             if (!listRes.ok) return [];
             const data = await listRes.json();
@@ -489,9 +570,7 @@ export class GoogleDriveProvider implements CloudProviderInterface {
 
                 // Download each entry
                 const downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
-                const downloadRes = await fetch(downloadUrl, {
-                    headers: { 'Authorization': `Bearer ${this.accessToken}` }
-                });
+                const downloadRes = await this.authenticatedFetch(downloadUrl);
 
                 if (downloadRes.ok) {
                     const entry = await downloadRes.json();
@@ -547,10 +626,9 @@ export class GoogleDriveProvider implements CloudProviderInterface {
                 ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
                 : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
 
-            const response = await fetch(endpoint, {
+            const response = await this.authenticatedFetch(endpoint, {
                 method: method,
                 headers: {
-                    'Authorization': `Bearer ${this.accessToken}`,
                     'Content-Type': `multipart/related; boundary=${boundary}`
                 },
                 body: multipartBody
@@ -574,9 +652,7 @@ export class GoogleDriveProvider implements CloudProviderInterface {
         const query = `name = '${entryId}.json' and 'appDataFolder' in parents and trashed = false`;
         const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&spaces=appDataFolder&fields=files(id)`;
 
-        const response = await fetch(url, {
-            headers: { 'Authorization': `Bearer ${this.accessToken}` }
-        });
+        const response = await this.authenticatedFetch(url);
 
         if (!response.ok) return null;
 
@@ -598,9 +674,8 @@ export class GoogleDriveProvider implements CloudProviderInterface {
                 return true; // Treat as success
             }
 
-            const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${this.accessToken}` }
+            const response = await this.authenticatedFetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+                method: 'DELETE'
             });
 
             if (!response.ok) {
@@ -653,10 +728,9 @@ export class GoogleDriveProvider implements CloudProviderInterface {
                 ? `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart`
                 : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
 
-            const response = await fetch(endpoint, {
+            const response = await this.authenticatedFetch(endpoint, {
                 method: method,
                 headers: {
-                    'Authorization': `Bearer ${this.accessToken}`,
                     'Content-Type': `multipart/related; boundary=${boundary}`
                 },
                 body: multipartBody
@@ -671,9 +745,7 @@ export class GoogleDriveProvider implements CloudProviderInterface {
 
     private async downloadJson(fileId: string): Promise<any | null> {
         try {
-            const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-                headers: { 'Authorization': `Bearer ${this.accessToken}` }
-            });
+            const response = await this.authenticatedFetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
             if (response.ok) return await response.json();
             return null;
         } catch {
@@ -770,9 +842,7 @@ export class GoogleDriveProvider implements CloudProviderInterface {
             const query = `'appDataFolder' in parents and trashed = false`;
             const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&spaces=appDataFolder&fields=files(id, name, modifiedTime)`;
 
-            const response = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${this.accessToken}` }
-            });
+            const response = await this.authenticatedFetch(url);
 
             if (!response.ok) {
                 const errorText = await response.text();

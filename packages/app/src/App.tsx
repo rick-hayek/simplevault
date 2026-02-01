@@ -131,17 +131,23 @@ const AppContent: React.FC = () => {
 
   // Listen for Deep Links (OAuth Redirects)
   useEffect(() => {
-    CapacitorApp.addListener('appUrlOpen', (data) => {
-      console.log('[App] Deep Link Received:', data.url);
-      // Pass to CloudService to handle if it's an auth redirect
-      CloudService.handleRedirect(data.url).then(handled => {
-        if (handled) {
-          console.log('[App] Deep link handled by CloudService');
-        } else {
-          console.log('[App] Deep link ignored');
-        }
-      });
+    // 1. Mobile (Capacitor)
+    const capListener = CapacitorApp.addListener('appUrlOpen', (data) => {
+      console.log('[App] Mobile Deep Link Received:', data.url);
+      CloudService.handleRedirect(data.url);
     });
+
+    // 2. Desktop (Electron)
+    if ((window as any).electronAPI?.onDeepLink) {
+      (window as any).electronAPI.onDeepLink((url: string) => {
+        logger.info('[App] Electron Deep Link Received:', url);
+        CloudService.handleRedirect(url);
+      });
+    }
+
+    return () => {
+      capListener.then(handle => handle.remove());
+    };
   }, []);
 
   // Auto-lock timer

@@ -40,7 +40,8 @@ interface SettingsViewProps {
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSettings, onDataChange }) => {
   const { t, i18n } = useTranslation();
-  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Modals State
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -52,17 +53,58 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
   // Connection State
   const [cloudConnected, setCloudConnected] = useState(() => CloudService.isSyncEnabled());
 
+  // Use Ref to track syncing state in event listeners (avoiding stale closures)
+  const [isSyncing, _setIsSyncing] = useState(false);
+  const isSyncingRef = React.useRef(false);
+  const setIsSyncing = (value: boolean) => {
+    isSyncingRef.current = value;
+    _setIsSyncing(value);
+  };
+
   // Password Change State
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordChangeStatus, setPasswordChangeStatus] = useState('');
 
+  // Use Ref to track mounting state to prevent auto-sync on view load
+  const isMountingRef = React.useRef(true);
+
   useEffect(() => {
+    isMountingRef.current = true;
+
     // Subscribe to CloudService connection changes
     const unsubscribe = CloudService.onConnectionChange((connected) => {
+      logger.info(`[SettingsView] onConnectionChange event: connected=${connected}, mounting=${isMountingRef.current}`);
       setCloudConnected(connected);
+
+      // SKIP the immediate callback that runs on mount.
+      if (isMountingRef.current) {
+        logger.info('[SettingsView] Skipping auto-sync on mount/initial subscription.');
+        return;
+      }
+
+      // Auto-trigger setup when connection is fully established (e.g. after Deep Link)
+      if (connected && !isSyncingRef.current) {
+        const activeId = CloudService.activeProvider?.id as CloudProvider;
+        if (activeId) {
+          logger.info('[SettingsView] Connection confirmed (Update). Scheduling sync resume for:', activeId);
+          // Use setTimeout to yield to render cycle and ensure state updates flush
+          setTimeout(() => {
+            if (!isSyncingRef.current) {
+              logger.info('[SettingsView] Executing auto-sync...');
+              connectToProvider(activeId);
+            }
+          }, 500);
+        } else {
+          logger.warn('[SettingsView] Connected but no active provider ID found.');
+        }
+      }
     });
+
+    // Unblock updates after the initial synchronous callback has fired
+    isMountingRef.current = false;
+
     return () => unsubscribe();
-  }, []);
+  }, []); // Remove dependencies to avoid stale closures if possible, or verify safe
 
   const { showAlert, showSuccess, showError, showWarning, showInfo } = useAlert();
 
@@ -295,6 +337,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
         return;
       }
 
+      // WAIT FOR NATIVE AUTH:
+      // If connected is true (flow started) but sync not enabled (token missing),
+      // we must wait for the deep link callback (onConnectionChange) to resume.
+      if (!CloudService.isSyncEnabled()) {
+        logger.info('[SettingsView] Native Auth started. Waiting for redirect/token...');
+        return;
+      }
+
       // Check if cloud has existing metadata
       const cloudMeta = await CloudService.fetchMetadata();
 
@@ -346,7 +396,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
         showError(t('sync.error.missing_verifier',
           'Cloud vault is missing password verification data. Please sync from the original device first to update cloud metadata.'));
       } else {
-        showError(e.message || t('settings.error.failed', 'Connection failed. Please try again.'));
+        // Show FULL error details for debugging
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        showError(`${t('settings.error.failed')} (${errorMsg})`);
       }
     } finally {
       setIsSyncing(false);

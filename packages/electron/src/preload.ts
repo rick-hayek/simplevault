@@ -24,7 +24,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
         retrieveSecret: (reason: string) => ipcRenderer.invoke('biometrics-retrieve', reason),
         deleteSecret: () => ipcRenderer.invoke('biometrics-delete'),
         hasSavedSecret: () => ipcRenderer.invoke('biometrics-check-saved'),
-    }
+    },
+    onDeepLink: (callback: (url: string) => void) => ipcRenderer.on('deep-link', (event, url) => callback(url)),
+    openExternal: (url: string) => ipcRenderer.invoke('app-open-external', url),
+    isPackaged: () => ipcRenderer.invoke('app-is-packaged'),
 });
 
 console.log('EtherVault Preload Script Loaded');
