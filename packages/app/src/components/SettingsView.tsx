@@ -604,6 +604,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
       return;
     }
 
+    // Item 13: Add password length validation (same as WelcomeView)
+    if (passwordForm.new.length < 8) {
+      setError(t('welcome.error.length', 'Password must be at least 8 characters'));
+      return;
+    }
+
     setIsChangingPassword(true);
     setPasswordChangeStatus(t('settings.status.encrypting', 'Re-encrypting vault...'));
 
@@ -613,7 +619,24 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
 
       const result = await AuthService.changeMasterPassword(passwordForm.old, passwordForm.new);
       if (result) {
-        // Fix: If cloud is connected, we must clear old data as key has changed
+        // Item 1: Update biometric secret if enabled
+        if (settings.biometricsEnabled) {
+          try {
+            setPasswordChangeStatus(t('settings.status.updating_bio', 'Updating biometric secret...'));
+            await BiometricService.deleteSecret();
+            const saved = await BiometricService.saveSecret(passwordForm.new);
+            if (!saved) {
+              // Biometric save failed - disable it to prevent broken state
+              setSettings({ ...settings, biometricsEnabled: false });
+              localStorage.removeItem('ethervault_bio');
+              logger.warn('[SettingsView] Biometric secret update failed after password change. Disabling biometrics.');
+            }
+          } catch (e) {
+            logger.error('[SettingsView] Failed to update biometric secret', e);
+          }
+        }
+
+        // If cloud is connected, we must clear old data as key has changed
         if (CloudService.isSyncEnabled()) {
           try {
             setPasswordChangeStatus(t('settings.status.resyncing', 'Syncing new data to cloud...'));

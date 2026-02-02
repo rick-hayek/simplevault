@@ -55,7 +55,6 @@ export class GoogleDriveProvider implements CloudProviderInterface {
 
     // Injected Native Client IDs
     private iosClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID_IOS || '';
-    private androidClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID_ANDROID || '';
 
     private scope = 'https://www.googleapis.com/auth/drive.appdata';
     private pkceVerifier: string = ''; // Store verifier temporarily
@@ -112,7 +111,7 @@ export class GoogleDriveProvider implements CloudProviderInterface {
             const isNative = Capacitor.isNativePlatform();
             const isElectron = this.isElectron();
             // Use iOS Client ID for both Android/iOS and Electron to support Custom URI Schemes
-            const targetClientId = ((isNative || isElectron) && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
+            const targetClientId = ((isNative || isElectron) && this.iosClientId) ? this.iosClientId : this.clientId;
 
             // Redirect URI must match exactly what was sent in auth request
             let redirectUri = `com.ethervault.app:/oauth2redirect`;
@@ -172,7 +171,6 @@ export class GoogleDriveProvider implements CloudProviderInterface {
                 this.accessToken = storedAccessToken;
                 this.tokenExpiresAt = parseInt(storedExpiry);
                 this.connected = true;
-                this.connected = true;
                 this.log('info', '[GoogleDrive] Restored valid session from storage (Access Token).');
                 return true;
             }
@@ -190,7 +188,7 @@ export class GoogleDriveProvider implements CloudProviderInterface {
         try {
             const isNative = Capacitor.isNativePlatform();
             const isElectron = this.isElectron();
-            const targetClientId = ((isNative || isElectron) && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
+            const targetClientId = ((isNative || isElectron) && this.iosClientId) ? this.iosClientId : this.clientId;
 
             const body = new URLSearchParams({
                 client_id: targetClientId,
@@ -223,7 +221,6 @@ export class GoogleDriveProvider implements CloudProviderInterface {
             }
 
             this.connected = true;
-            this.connected = true;
             this.log('info', '[GoogleDrive] Session refreshed successfully (Refresh Token).');
             return true;
         } catch (e) {
@@ -241,7 +238,7 @@ export class GoogleDriveProvider implements CloudProviderInterface {
             const isNative = Capacitor.isNativePlatform();
             const isElectron = this.isElectron();
             // info: Use iOS Client ID for both Android and iOS directly. Electron also uses it for Native Auth.
-            const targetClientId = ((isNative || isElectron) && this.iosClientId) ? this.iosClientId : (this.androidClientId || this.clientId);
+            const targetClientId = ((isNative || isElectron) && this.iosClientId) ? this.iosClientId : this.clientId;
 
             let redirectUri = `com.ethervault.app:/oauth2redirect`;
             if (isNative && this.iosClientId) {

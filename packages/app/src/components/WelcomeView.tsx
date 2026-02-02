@@ -28,7 +28,6 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({ onComplete, biometrics
         return;
       }
       setError('');
-      setError('');
 
       // Skip Step 2 if Biometrics NOT supported
       if (!biometricsSupported) {
