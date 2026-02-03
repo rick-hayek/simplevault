@@ -729,7 +729,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('settings.title')}</h1>
             <p className="hidden md:block text-slate-500 dark:text-slate-400 text-xs mt-0.5">{t('settings.subtitle')}</p>
           </div>
-          <div className="hidden md:block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] px-2 py-1 rounded-lg">VER {appVersion}</div>
         </div>
       </div>
 
@@ -1015,26 +1014,25 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                 </p>
               )}
             </div>
+            {/* About Section */}
+            <button
+              onClick={() => setIsAboutModalOpen(true)}
+              className="w-full py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group shadow-sm"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 group-hover:text-indigo-500 transition-colors">
+                  <Info className="w-5 h-5" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">{t('about.title', 'About')}</h3>
+                  <p className="text-[10px] font-bold text-slate-400 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors mt-0.5">v{appVersion}</p>
+                </div>
+              </div>
+              <div className="text-slate-300 dark:text-slate-700 group-hover:translate-x-1 transition-transform">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </div>
+            </button>
           </div>
-
-          {/* About Section */}
-          <button
-            onClick={() => setIsAboutModalOpen(true)}
-            className="w-full py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group shadow-sm"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 group-hover:text-indigo-500 transition-colors">
-                <Info className="w-5 h-5" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">{t('about.menu_title', 'About')}</h3>
-                <p className="text-[10px] font-bold text-slate-400 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors mt-0.5">v{appVersion}</p>
-              </div>
-            </div>
-            <div className="text-slate-300 dark:text-slate-700 group-hover:translate-x-1 transition-transform">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-            </div>
-          </button>
         </div>
 
         {

@@ -11,10 +11,8 @@ export class BiometricService {
     static async isAvailable(): Promise<boolean> {
         if (this.isNative) {
             const result = await NativeBiometric.isAvailable();
-            console.log('[Bio] Native isAvailable:', result.isAvailable);
             return result.isAvailable;
         } else if (window.electronAPI?.biometrics) {
-            console.log('[Bio] Electron isAvailable:');
             return await window.electronAPI.biometrics.isAvailable();
         }
         console.log('[Bio] Not available');

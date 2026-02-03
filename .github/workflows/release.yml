@@ -92,11 +92,12 @@ jobs:
           path: release-artifacts
           merge-multiple: true
 
-      - name: Generate Checksums
+      - name: Clean Artifacts
         run: |
           cd release-artifacts
-          sha256sum * > checksums.txt
-          cat checksums.txt
+          rm -f *.blockmap *.yml builder-debug.yml
+
+
 
       - name: Create Release
         uses: softprops/action-gh-release@v1

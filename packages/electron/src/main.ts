@@ -99,7 +99,7 @@ function createWindow() {
             console.error('Failed to load production UI:', err);
         });
 
-        mainWindow.webContents.openDevTools();
+        // mainWindow.webContents.openDevTools();
     }
 
     // Capture load failures

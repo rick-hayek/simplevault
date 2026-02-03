@@ -247,8 +247,7 @@
         "cancel": "取消"
     },
     "about": {
-        "title": "关于 EtherVault",
-        "menu_title": "关于",
+        "title": "关于",
         "description": "一款专为隐私和简洁打造的安全、离线优先、跨平台密码管理器。",
         "opensource": "开源代码",
         "privacy_title": "隐私与安全",

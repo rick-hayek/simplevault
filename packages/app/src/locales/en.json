@@ -247,8 +247,7 @@
         "cancel": "Cancel"
     },
     "about": {
-        "title": "About EtherVault",
-        "menu_title": "About",
+        "title": "About",
         "description": "A secure, offline-first, cross-platform password manager built for privacy and simplicity.",
         "opensource": "Open Source",
         "privacy_title": "Privacy & Security",
