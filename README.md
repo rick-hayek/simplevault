@@ -58,13 +58,49 @@ This project is built on a modern frontend technology stack:
 - Node.js (v18 or higher recommended)
 - NPM
 
-### 1. Install Dependencies
+### 1. Google Console Setup (For Cloud Sync)
+Before running the app, you need to set up a project in Google Cloud Console to enable Google Drive synchronization:
+
+1.  Go to [Google Cloud Console](https://console.cloud.google.com/).
+2.  Create a new project (e.g., `ethervault-dev`).
+3.  **Enable API**:
+    *   Navigate to **APIs & Services > Library**.
+    *   Search for **Google Drive API** and enable it.
+4.  **Configure OAuth Consent Screen**:
+    *   Go to **APIs & Services > OAuth consent screen**.
+    *   Select **External** (unless you are a G-Suite user).
+    *   Fill in required app information.
+    *   Add your email as a **Test User**.
+5.  **Create Credentials (Web Client)**:
+    *   Go to **APIs & Services > Credentials**.
+    *   Click **Create Credentials > OAuth Client ID**.
+    *   Application type: **Web application**.
+    *   Add Authorized JavaScript origins: `http://localhost:3000` (and `http://localhost:5173` if needed).
+    *   Add Authorized redirect URIs: `http://localhost:3000` (and `http://localhost:5173` if needed).
+    *   Copy the **Client ID**.
+6.  **Create Credentials (iOS Client)**:
+    *   Go to **APIs & Services > Credentials**.
+    *   Click **Create Credentials > OAuth Client ID**.
+    *   Application type: **iOS**.
+    *   Add Bundle ID: `com.ethervault.app`.
+    *   Copy the **Client ID**.
+7.  **Configure Environment Variables**:
+    *   Create a `.env` file in `packages/app/.env` (copy from `.env.example` if available).
+    *   Add your credentials:
+        ```bash
+        # This is for local development
+        VITE_GOOGLE_CLIENT_ID=your_client_id_here
+        # This is for native application on iOS, Android, and Desktop
+        VITE_GOOGLE_CLIENT_ID_IOS=your_client_id_here
+        ```
+
+### 2. Install Dependencies
 Run in the project root:
 ```bash
 npm install
 ```
 
-### 2. Start Development Environment
+### 3. Start Development Environment
 
 **Web Mode (Browser):**
 ```bash
@@ -81,7 +117,7 @@ npm run dev:desktop
 npm run mobile:sync
 ```
 
-### 3. Build & Package
+### 4. Build & Package
 
 **Build Web Assets:**
 ```bash
@@ -102,7 +138,7 @@ npm run build:ios
 npm run build:android
 ```
 
-### 4. Other Commands
+### 5. Other Commands
 
 **Clean Project:**
 ```bash
