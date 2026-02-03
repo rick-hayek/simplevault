@@ -72,9 +72,6 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose, appVers
 
                             {/* App Branding */}
                             <div className="text-center space-y-4 py-4">
-                                <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-[28px] mx-auto flex items-center justify-center shadow-xl shadow-indigo-500/20 mb-4">
-                                    <Shield size={40} className="text-white" />
-                                </div>
                                 <div>
                                     <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">EtherVault</h3>
                                     {appVersion && <p className="text-slate-500 dark:text-slate-400 font-bold mt-1 text-sm">v{appVersion}</p>}

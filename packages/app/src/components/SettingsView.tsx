@@ -727,7 +727,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
         <div className="flex items-center justify-between">
           <div className="block">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('settings.title')}</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{t('settings.subtitle')}</p>
+            <p className="hidden md:block text-slate-500 dark:text-slate-400 text-xs mt-0.5">{t('settings.subtitle')}</p>
           </div>
           <div className="hidden md:block text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] px-2 py-1 rounded-lg">VER {appVersion}</div>
         </div>
@@ -1300,34 +1300,36 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
       <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} appVersion={appVersion} />
 
       {isCacheConfirmOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsCacheConfirmOpen(false)} />
-          <div className="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 p-6 space-y-6">
-            <div className="space-y-2 text-center">
-              <div className="w-12 h-12 bg-rose-50 dark:bg-rose-900/20 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
-                <Trash2 className="w-6 h-6" />
+        <Portal>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsCacheConfirmOpen(false)} />
+            <div className="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 p-6 space-y-6">
+              <div className="space-y-2 text-center">
+                <div className="w-12 h-12 bg-rose-50 dark:bg-rose-900/20 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500">
+                  <Trash2 className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('settings.clear_cache')}?</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {t('settings.clear_cache_desc', 'This will remove local logs and temporary data. Your vault data will NOT be deleted.')}
+                </p>
               </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('settings.clear_cache')}?</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                {t('settings.clear_cache_desc', 'This will remove local logs and temporary data. Your vault data will NOT be deleted.')}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setIsCacheConfirmOpen(false)}
-                className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-mono text-sm"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={performClearCache}
-                className="flex-1 px-4 py-3 rounded-xl bg-rose-500 text-white font-bold hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 font-mono text-sm"
-              >
-                {t('common.confirm_delete', 'Confirm')}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsCacheConfirmOpen(false)}
+                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-mono text-sm"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={performClearCache}
+                  className="flex-1 px-4 py-3 rounded-xl bg-rose-500 text-white font-bold hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 font-mono text-sm"
+                >
+                  {t('common.confirm_delete', 'Confirm')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
     </div>
   );

@@ -15,7 +15,13 @@ export const MobilePageSlider: React.FC<MobilePageSliderProps> = ({
     const controls = useAnimation();
     const x = useMotionValue(0);
     const containerRef = useRef<HTMLDivElement>(null);
-    const width = window.innerWidth;
+    const [width, setWidth] = React.useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => setWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         controls.start({
@@ -51,9 +57,10 @@ export const MobilePageSlider: React.FC<MobilePageSliderProps> = ({
     return (
         <div className="w-full h-full overflow-hidden relative" ref={containerRef}>
             <motion.div
-                className="flex h-full"
-                style={{ width: `${children.length * 100}%`, x }}
+                className="flex h-full touch-pan-y"
+                style={{ width: `${children.length * 100}%`, x, touchAction: 'pan-y' }}
                 drag="x"
+                dragDirectionLock
                 dragConstraints={{
                     left: -((children.length - 1) * width),
                     right: 0
@@ -65,8 +72,8 @@ export const MobilePageSlider: React.FC<MobilePageSliderProps> = ({
                 {children.map((child, i) => (
                     <div
                         key={i}
-                        className="w-screen h-full overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] scrollbar-hide"
-                        style={{ width: width }}
+                        className="w-screen h-full overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] scrollbar-hide touch-pan-y"
+                        style={{ width: width, touchAction: 'pan-y' }}
                     >
                         <div className="max-w-6xl mx-auto min-h-full">
                             {child}

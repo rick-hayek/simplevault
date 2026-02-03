@@ -175,55 +175,11 @@ export const Layout: React.FC<LayoutProps> = ({
         </div>
       </aside>
 
-      {/* Mobile Header (Clean & Minimal) - Only show on Vault view */}
-      {!['generator', 'security', 'settings'].includes(currentView) && (
-        <header className="md:hidden flex items-center pt-[calc(env(safe-area-inset-top)+4px)] pb-4 bg-slate-50 dark:bg-slate-950 shrink-0 z-30 px-4 titlebar transition-all duration-300 min-h-[60px]">
-          {isSearchMode ? (
-            <div className="flex-1 flex items-center gap-3 animate-in fade-in slide-in-from-right-5 duration-200">
-              <Search className="w-5 h-5 text-slate-400 shrink-0" />
-              <input
-                autoFocus
-                type="text"
-                value={searchQuery}
-                onChange={(e) => onSearch?.(e.target.value)}
-                placeholder={t('layout.search_placeholder')}
-                className="flex-1 bg-transparent border-none outline-none text-base font-medium text-slate-900 dark:text-white placeholder:text-slate-400"
-              />
-              <button
-                onClick={() => {
-                  setIsSearchMode(false);
-                  onSearch?.('');
-                }}
-                className="p-2 -mr-2 text-slate-500 dark:text-slate-400"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="flex-1 flex items-center">
-                <span className="font-bold text-2xl text-slate-900 dark:text-white tracking-tight">EtherVault</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {currentView === 'vault' && (
-                  <button
-                    onClick={() => setIsSearchMode(true)}
-                    className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
-                  >
-                    <Search className="w-5 h-5" />
-                  </button>
-                )}
-                <button
-                  onClick={onLock}
-                  className="p-2 -mr-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </div>
-            </>
-          )}
-        </header>
-      )}
+      {/* Mobile Header (Clean & Minimal) - Only show on Non-Vault views if needed, but currently VaultView handles its own. 
+          Actually, let's keep it for other views if they exist/need it, but based on user request, VaultView handles its own.
+          The condition !['generator', 'security', 'settings'].includes(currentView) essentially meant 'vault'.
+          So we remove it entirely as requested.
+      */}
 
       {/* Desktop Window Drag Handle (Right Side) */}
       <div className="hidden md:block fixed top-0 right-0 left-64 h-8 z-50 titlebar" />

@@ -432,6 +432,9 @@ const AppContent: React.FC = () => {
             onEdit={handleOpenEdit}
             onAdd={handleOpenAdd}
             onGoToSettings={() => setCurrentView('settings')}
+            onLock={handleLock}
+            searchQuery={searchQuery}
+            isSyncEnabled={settings.cloudProvider !== 'none'}
           />
         );
       case 'security':
@@ -474,6 +477,9 @@ const AppContent: React.FC = () => {
           onEdit={handleOpenEdit}
           onAdd={handleOpenAdd}
           onGoToSettings={() => setCurrentView('settings')}
+          onLock={handleLock}
+          searchQuery={searchQuery}
+          isSyncEnabled={settings.cloudProvider !== 'none'}
         />;
     }
   };
@@ -509,6 +515,9 @@ const AppContent: React.FC = () => {
             onEdit={handleOpenEdit}
             onAdd={handleOpenAdd}
             onGoToSettings={() => setCurrentView('settings')}
+            onLock={handleLock}
+            searchQuery={searchQuery}
+            isSyncEnabled={settings.cloudProvider !== 'none'}
           />
 
           {/* Security View */}

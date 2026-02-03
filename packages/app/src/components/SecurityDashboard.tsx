@@ -31,7 +31,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ passwords,
         <div className="flex items-center justify-between">
           <div className="block">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('security.title')}</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{t('security.subtitle')}</p>
+            <p className="hidden md:block text-slate-500 dark:text-slate-400 text-xs mt-0.5">{t('security.subtitle')}</p>
           </div>
           <button
             onClick={() => {

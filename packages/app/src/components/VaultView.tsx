@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Plus, ExternalLink, Copy, Check, Globe, User as UserIcon, Lock, Edit2, User, Key } from 'lucide-react';
-import { VaultService, PasswordEntry, CryptoService, SecurityService, VaultStorageItem, Category } from '@ethervault/core';
+import { Search, Plus, ExternalLink, Copy, Check, Globe, User as UserIcon, Lock, Edit2, User, Key, LogOut, X } from 'lucide-react';
+import { VaultService, PasswordEntry, CryptoService, SecurityService, VaultStorageItem, Category, CloudService } from '@ethervault/core';
 import { useTranslation } from 'react-i18next';
 import { CATEGORIES } from '../constants';
 
@@ -51,6 +51,9 @@ interface VaultViewProps {
   onEdit: (entry: PasswordEntry) => void;
   onAdd: () => void;
   onGoToSettings: () => void;
+  onLock: () => void;
+  searchQuery: string;
+  isSyncEnabled: boolean;
 }
 
 export const VaultView: React.FC<VaultViewProps> = ({
@@ -63,15 +66,38 @@ export const VaultView: React.FC<VaultViewProps> = ({
   onTagChange,
   onEdit,
   onAdd,
-  onGoToSettings
+  onGoToSettings,
+  onLock,
+  searchQuery,
+  isSyncEnabled
 }) => {
   const { t } = useTranslation();
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isSearchMode, setIsSearchMode] = useState(false);
 
   // One-time sync prompt state
   const [showSyncPrompt, setShowSyncPrompt] = useState(() => {
-    return localStorage.getItem('ethervault_sync_prompt_seen') !== 'true';
+    // If already seen, don't show
+    if (localStorage.getItem('ethervault_sync_prompt_seen') === 'true') {
+      return false;
+    }
+
+    // If sync is already active (configured), auto-dismiss and mark as seen
+    if (CloudService.activeProvider) {
+      localStorage.setItem('ethervault_sync_prompt_seen', 'true');
+      return false;
+    }
+
+    return true;
   });
+
+  // Auto-dismiss if sync becomes enabled
+  React.useEffect(() => {
+    if (isSyncEnabled && showSyncPrompt) {
+      localStorage.setItem('ethervault_sync_prompt_seen', 'true');
+      setShowSyncPrompt(false);
+    }
+  }, [isSyncEnabled, showSyncPrompt]);
 
   const handleDismissPrompt = () => {
     localStorage.setItem('ethervault_sync_prompt_seen', 'true');
@@ -112,6 +138,55 @@ export const VaultView: React.FC<VaultViewProps> = ({
 
   return (
     <div className="min-h-full">
+      {/* Mobile Header */}
+      <header className="md:hidden flex items-center pt-[calc(env(safe-area-inset-top)+4px)] pb-4 bg-slate-50 dark:bg-slate-950 shrink-0 z-30 px-4 titlebar transition-all duration-300 min-h-[60px]">
+        {isSearchMode ? (
+          <div className="flex-1 flex items-center gap-3 animate-in fade-in slide-in-from-right-5 duration-200">
+            <Search className="w-5 h-5 text-slate-400 shrink-0" />
+            <input
+              autoFocus
+              type="text"
+              value={searchQuery}
+              onChange={(e) => onSearch(e.target.value)}
+              placeholder={t('vault.search')}
+              className="flex-1 bg-transparent border-none outline-none text-base font-medium text-slate-900 dark:text-white placeholder:text-slate-400"
+            />
+            <button
+              onClick={() => {
+                setIsSearchMode(false);
+                onSearch('');
+              }}
+              className="p-2 -mr-2 text-slate-500 dark:text-slate-400"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('vault.title')}</h1>
+              <p className="hidden text-slate-500 dark:text-slate-400 mt-0.5 text-xs">{t('vault.subtitle')}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsSearchMode(true)}
+                className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
+                title={t('vault.search')}
+              >
+                <Search className="w-5 h-5" />
+              </button>
+              <button
+                onClick={onLock}
+                className="p-2 -mr-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors"
+                title={t('layout.lock_vault', 'Lock Vault')}
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          </>
+        )}
+      </header>
+
       {/* Desktop Sticky Header */}
       <div className="hidden md:flex flex-col gap-6 sticky top-0 z-20 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-sm px-8 pt-8 pb-4 transition-all">
         <div className="flex flex-row items-center justify-between">
