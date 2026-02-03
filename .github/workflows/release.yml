@@ -123,11 +123,17 @@ jobs:
             -Pandroid.injected.signing.key.alias=${{ secrets.ANDROID_ALIAS }} \
             -Pandroid.injected.signing.key.password=${{ secrets.ANDROID_KEY_PASSWORD }}
 
+      - name: Rename APK
+        run: |
+          cd packages/app/android/app/build/outputs/apk/release
+          VERSION=${GITHUB_REF_NAME#v}
+          mv app-release.apk EtherVault-$VERSION.apk
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts-android
-          path: packages/app/android/app/build/outputs/apk/release/*.apk
+          path: packages/app/android/app/build/outputs/apk/release/EtherVault-*.apk
           if-no-files-found: error
 
   release:
