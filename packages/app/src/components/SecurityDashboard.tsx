@@ -176,7 +176,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({ passwords,
             className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50"
           >
             <RefreshCcw className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} />
-            <span className="uppercase tracking-wider text-xs">{isScanning ? t('security.scanning', 'SCANNING...') : t('security.scan_full', 'Run Full Scan')}</span>
+            <span className="tracking-wider text-xs">{isScanning ? t('security.scanning', 'Scanning...') : t('security.scan_full', 'Run Full Scan')}</span>
           </button>
         </div>
       </div>

@@ -186,7 +186,12 @@ export const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
                             <input
                                 type="password"
                                 value={cloudPassword}
-                                onChange={(e) => setCloudPassword(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (/^[\x21-\x7E]*$/.test(val)) {
+                                        setCloudPassword(val);
+                                    }
+                                }}
                                 placeholder={t('sync.conflict.cloud_password_placeholder', 'Cloud Master Password')}
                                 className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                                 autoFocus

@@ -140,7 +140,12 @@ export const EntryModal: React.FC<EntryModalProps> = ({ entry, onClose, onSave, 
                                     type="text"
                                     required
                                     value={formData.password}
-                                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                    onChange={e => {
+                                        const val = e.target.value;
+                                        if (/^[\x21-\x7E]*$/.test(val)) {
+                                            setFormData({ ...formData, password: val });
+                                        }
+                                    }}
                                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3.5 pl-12 pr-12 outline-none focus:border-indigo-500 transition-all text-base md:text-sm text-slate-900 dark:text-white font-mono shadow-sm"
                                     placeholder={t('vault.entry.password_placeholder')}
                                 />

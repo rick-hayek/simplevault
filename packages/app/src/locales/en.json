@@ -127,6 +127,12 @@
             "cache_cleared": "Cache Cleared!",
             "biometric_enabled": "Biometric unlock enabled"
         },
+        "status": {
+            "encrypting": "Re-encrypting vault...",
+            "updating_bio": "Updating biometric secret...",
+            "resyncing": "Syncing new data to cloud...",
+            "done": "Done!"
+        },
         "export": "Export",
         "clear_cache": "Clear Cache",
         "clear_cache_desc": "This will remove local logs and temporary data. Your vault data will NOT be deleted.",
@@ -171,6 +177,8 @@
         "title": "Security Health",
         "subtitle": "Real-time analysis of your credential vault",
         "scan": "FULL SCAN",
+        "scanning": "Scanning...",
+        "scan_full": "Run Full Scan",
         "score": "Score",
         "status": {
             "title": "Protection Status",
@@ -187,9 +195,9 @@
         },
         "alerts": {
             "title": "Security Alerts",
-            "action_items": "ACTION ITEMS",
+            "action_items": "Action Items",
             "empty": "No security issues found. Great job!",
-            "resolve": "RESOLVE",
+            "resolve": "Resolve",
             "weak_title": "Weak Password: {{title}}",
             "weak_description": "This password is too short or lacks complexity.",
             "reused_title": "Reused Password: {{count}} Accounts",
@@ -233,12 +241,28 @@
         "start": "Get Started",
         "error": {
             "length": "Master Key must be at least 8 characters.",
+            "weak": "Password is too weak. Use a mix of letters, numbers, and symbols.",
             "match": "Keys do not match."
         }
     },
     "sync": {
         "just_now": "Just now",
-        "syncing": "Syncing..."
+        "syncing": "Syncing...",
+        "credentials_imported": "Cloud vault found. Please log in again with your original password.",
+        "merge_complete": "Successfully merged entries from cloud.",
+        "use_cloud_complete": "Switched to cloud vault. Please log in again with your cloud password.",
+        "use_local_complete": "Cloud has been overwritten with local data.",
+        "salt_updated": "Cloud security settings updated. You must log in again.",
+        "error": {
+            "missing_verifier": "Cloud vault is missing password verification data. Please sync from the original device first to update cloud metadata.",
+            "missing_password": "Cloud password is required for merge.",
+            "no_cloud_entries": "No cloud entries found to merge.",
+            "wrong_password": "Incorrect cloud password. Decryption failed.",
+            "password_required": "Cloud password is required to verify access before switching."
+        },
+        "conflict": {
+            "cloud_password_placeholder": "Cloud Master Password"
+        }
     },
     "biometric_prompt": {
         "title": "Unlock EtherVault",

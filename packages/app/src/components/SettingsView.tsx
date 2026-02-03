@@ -26,7 +26,7 @@ import {
 import { Portal } from './Portal';
 import { useTranslation } from 'react-i18next';
 import { BiometricService } from '../utils/BiometricService';
-import { AppSettings, CloudProvider, AuthService, VaultService, CloudService, CryptoService, NETWORK_TIMEOUT_MS } from '@ethervault/core';
+import { AppSettings, CloudProvider, AuthService, VaultService, CloudService, CryptoService, NETWORK_TIMEOUT_MS, SecurityService } from '@ethervault/core';
 import { ImportModal } from './ImportModal';
 import { ExportModal } from './ExportModal';
 import { SyncWarningModal } from './SyncWarningModal';
@@ -640,6 +640,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
       return;
     }
 
+    // Enforce complexity
+    const strength = SecurityService.calculateStrength(passwordForm.new);
+    if (strength === 'Weak' || strength === 'Medium') {
+      setError(t('welcome.error.weak', 'Password is too weak. Use a mix of letters, numbers, and symbols.'));
+      return;
+    }
+
     setIsChangingPassword(true);
     setPasswordChangeStatus(t('settings.status.encrypting', 'Re-encrypting vault...'));
 
@@ -1058,7 +1065,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                         type="password"
                         required
                         value={passwordForm.old}
-                        onChange={e => setPasswordForm({ ...passwordForm, old: e.target.value })}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (/^[\x21-\x7E]*$/.test(val)) {
+                            setPasswordForm({ ...passwordForm, old: val });
+                          }
+                        }}
                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 outline-none focus:border-indigo-500 transition-all text-sm"
                       />
                     </div>
@@ -1068,7 +1080,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                         type="password"
                         required
                         value={passwordForm.new}
-                        onChange={e => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (/^[\x21-\x7E]*$/.test(val)) {
+                            setPasswordForm({ ...passwordForm, new: val });
+                          }
+                        }}
                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 outline-none focus:border-indigo-500 transition-all text-sm"
                       />
                     </div>
@@ -1078,7 +1095,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                         type="password"
                         required
                         value={passwordForm.confirm}
-                        onChange={e => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (/^[\x21-\x7E]*$/.test(val)) {
+                            setPasswordForm({ ...passwordForm, confirm: val });
+                          }
+                        }}
                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 outline-none focus:border-indigo-500 transition-all text-sm"
                       />
                     </div>
@@ -1137,7 +1159,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                           type="password"
                           required
                           value={bioPassword}
-                          onChange={e => setBioPassword(e.target.value)}
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (/^[\x21-\x7E]*$/.test(val)) {
+                              setBioPassword(val);
+                            }
+                          }}
                           className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 outline-none focus:border-indigo-500 transition-all text-sm font-bold"
                           placeholder={t('login.unlock_placeholder')}
                           autoFocus

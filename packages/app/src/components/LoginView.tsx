@@ -63,7 +63,12 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin, bioEnabled }) => 
                 <input
                   type={showKey ? "text" : "password"}
                   value={key}
-                  onChange={(e) => setKey(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (/^[\x21-\x7E]*$/.test(val)) {
+                      setKey(val);
+                    }
+                  }}
                   placeholder={t('login.unlock_placeholder')}
                   autoFocus
                   className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl md:rounded-2xl py-3.5 md:py-4 pl-12 pr-12 outline-none focus:border-slate-400 transition-all text-slate-900 dark:text-white font-medium text-center tracking-widest text-sm md:text-base"

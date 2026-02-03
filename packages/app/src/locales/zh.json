@@ -127,6 +127,12 @@
             "cache_cleared": "缓存已清理!",
             "biometric_enabled": "生物识别解锁已启用"
         },
+        "status": {
+            "encrypting": "正在重新加密密码库...",
+            "updating_bio": "正在更新生物识别密钥...",
+            "resyncing": "正在同步新数据到云端...",
+            "done": "完成！"
+        },
         "export": "导出",
         "clear_cache": "清除缓存",
         "clear_cache_desc": "这将清除本地日志和临时数据，但不会删除您的密码数据。",
@@ -171,6 +177,8 @@
         "title": "安全状况",
         "subtitle": "针对您密码库的实时安全分析",
         "scan": "全面扫描",
+        "scanning": "扫描中...",
+        "scan_full": "运行全面扫描",
         "score": "评分",
         "status": {
             "title": "保护状态",
@@ -233,12 +241,28 @@
         "start": "开始使用",
         "error": {
             "length": "主密钥必须至少 8 个字符。",
+            "weak": "密码太弱。请使用字母、数字和符号的组合。",
             "match": "密钥不匹配。"
         }
     },
     "sync": {
         "just_now": "刚刚",
-        "syncing": "同步中..."
+        "syncing": "同步中...",
+        "credentials_imported": "发现云端密码库。请使用您的原始密码重新登录。",
+        "merge_complete": "成功合并云端条目。",
+        "use_cloud_complete": "已切换至云端密码库。请使用您的云端密码重新登录。",
+        "use_local_complete": "云端数据已被本地数据覆盖。",
+        "salt_updated": "云端安全设置已更新。您必须重新登录。",
+        "error": {
+            "missing_verifier": "云端密码库缺少密码验证数据。请先从原始设备同步以更新云端元数据。",
+            "missing_password": "合并需要云端密码。",
+            "no_cloud_entries": "未找到可合并的云端条目。",
+            "wrong_password": "云端密码错误。解密失败。",
+            "password_required": "切换前需要云端密码进行验证。"
+        },
+        "conflict": {
+            "cloud_password_placeholder": "云端主密码"
+        }
     },
     "biometric_prompt": {
         "title": "解锁 EtherVault",

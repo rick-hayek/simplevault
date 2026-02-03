@@ -161,7 +161,7 @@ export const Layout: React.FC<LayoutProps> = ({
           >
             <div className="flex items-center gap-3">
               {isDarkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-slate-600" />}
-              <span className="md:block text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">{t('layout.appearance')}</span>
+              <span className="md:block text-[10px] font-bold text-slate-600 dark:text-slate-300 tracking-wider">{t('layout.appearance')}</span>
             </div>
           </button>
 
@@ -170,7 +170,7 @@ export const Layout: React.FC<LayoutProps> = ({
             className="w-full flex items-center justify-start gap-3 px-3 py-3 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors"
           >
             <LogOut className="w-5 h-5 shrink-0" />
-            <span className="md:block text-[10px] font-bold uppercase tracking-wider">{t('layout.lock_vault')}</span>
+            <span className="md:block text-[10px] font-bold tracking-wider">{t('layout.lock_vault')}</span>
           </button>
         </div>
       </aside>

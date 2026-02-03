@@ -68,7 +68,12 @@ export const SyncWarningModal: React.FC<SyncWarningModalProps> = ({ onClose, onC
                                 autoFocus
                                 required
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (/^[\x21-\x7E]*$/.test(val)) {
+                                        setPassword(val);
+                                    }
+                                }}
                                 placeholder="Enter Master Password to continue"
                                 className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-3 px-4 outline-none focus:border-amber-500 transition-all text-sm"
                             />

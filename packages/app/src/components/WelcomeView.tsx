@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Key, Fingerprint, ChevronRight, Lock, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { SecurityService } from '@ethervault/core';
 
 interface WelcomeViewProps {
   onComplete: (masterKey: string, bioEnabled: boolean) => void;
@@ -21,6 +22,13 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({ onComplete, biometrics
     if (step === 1) {
       if (masterKey.length < 8) {
         setError(t('welcome.error.length'));
+        return;
+      }
+
+      // Enforce complexity
+      const strength = SecurityService.calculateStrength(masterKey);
+      if (strength === 'Weak' || strength === 'Medium') {
+        setError(t('welcome.error.weak', 'Password is too weak. Use a mix of letters, numbers, and symbols.'));
         return;
       }
       if (masterKey !== confirmKey) {
@@ -75,7 +83,12 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({ onComplete, biometrics
                   <input
                     type={showKey ? "text" : "password"}
                     value={masterKey}
-                    onChange={(e) => setMasterKey(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^[\x21-\x7E]*$/.test(val)) {
+                        setMasterKey(val);
+                      }
+                    }}
                     placeholder={t('welcome.key_placeholder')}
                     className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl md:rounded-2xl py-3.5 md:py-4 pl-12 pr-12 outline-none focus:border-slate-400 transition-all text-slate-900 dark:text-white font-medium text-sm md:text-base"
                   />
@@ -95,7 +108,12 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({ onComplete, biometrics
                   <input
                     type={showKey ? "text" : "password"}
                     value={confirmKey}
-                    onChange={(e) => setConfirmKey(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (/^[\x21-\x7E]*$/.test(val)) {
+                        setConfirmKey(val);
+                      }
+                    }}
                     placeholder={t('welcome.repeat_placeholder')}
                     className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl md:rounded-2xl py-3.5 md:py-4 pl-12 pr-4 outline-none focus:border-slate-400 transition-all text-slate-900 dark:text-white font-medium text-sm md:text-base"
                   />
