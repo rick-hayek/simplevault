@@ -1,6 +1,6 @@
 {
     "name": "ethervault",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "private": true,
     "workspaces": [
         "packages/*"
@@ -13,6 +13,8 @@
         "build:android": "npm run cap:sync -w @ethervault/app && npm run cap:open:android -w @ethervault/app",
         "mobile:sync": "npm run cap:sync -w @ethervault/app",
         "dist:desktop": "npm run build && npm run dist -w @ethervault/electron",
+        "sync-version": "node scripts/sync-version.js",
+        "postversion": "npm run sync-version && git add packages/*/package.json",
         "test": "vitest run",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
