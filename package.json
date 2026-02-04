@@ -13,12 +13,19 @@
         "build:android": "npm run cap:sync -w @ethervault/app && npm run cap:open:android -w @ethervault/app",
         "mobile:sync": "npm run cap:sync -w @ethervault/app",
         "dist:desktop": "npm run build && npm run dist -w @ethervault/electron",
-        "test": "npm run test --workspaces",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui",
         "type-check": "npm run type-check --workspaces",
         "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist packages/*/out"
     },
     "devDependencies": {
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.2",
+        "@vitest/coverage-v8": "^1.6.1",
         "concurrently": "^9.2.1",
+        "jsdom": "^28.0.0",
         "wait-on": "^9.0.3"
     }
 }
