@@ -1,9 +1,15 @@
-export class StorageService {
-    private static dbName = 'EtherVaultDB';
-    private static version = 1;
-    private static dbPromise: Promise<IDBDatabase> | null = null;
+import { IStorageService } from './interfaces';
 
-    static async init(): Promise<IDBDatabase> {
+/**
+ * Instance-based StorageService implementation.
+ * Use getStorageService() singleton for production, or instantiate directly for testing.
+ */
+export class StorageServiceImpl implements IStorageService {
+    private dbName = 'EtherVaultDB';
+    private version = 1;
+    private dbPromise: Promise<IDBDatabase> | null = null;
+
+    async init(): Promise<IDBDatabase> {
         if (this.dbPromise) return this.dbPromise;
 
         this.dbPromise = new Promise((resolve, reject) => {
@@ -29,7 +35,7 @@ export class StorageService {
         return this.dbPromise;
     }
 
-    static async setItem(storeName: string, key: string, value: any): Promise<void> {
+    async setItem(storeName: string, key: string, value: any): Promise<void> {
         const db = await this.init();
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(storeName, 'readwrite');
@@ -43,7 +49,7 @@ export class StorageService {
         });
     }
 
-    static async getItem(storeName: string, key: string): Promise<any> {
+    async getItem(storeName: string, key: string): Promise<any> {
         const db = await this.init();
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(storeName, 'readonly');
@@ -55,7 +61,7 @@ export class StorageService {
         });
     }
 
-    static async getAll(storeName: string): Promise<any[]> {
+    async getAll(storeName: string): Promise<any[]> {
         const db = await this.init();
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(storeName, 'readonly');
@@ -67,7 +73,7 @@ export class StorageService {
         });
     }
 
-    static async deleteItem(storeName: string, key: string): Promise<void> {
+    async deleteItem(storeName: string, key: string): Promise<void> {
         const db = await this.init();
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(storeName, 'readwrite');
@@ -82,7 +88,7 @@ export class StorageService {
     /**
      * Clear all items from an object store.
      */
-    static async clear(storeName: string): Promise<void> {
+    async clear(storeName: string): Promise<void> {
         const db = await this.init();
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(storeName, 'readwrite');
@@ -92,5 +98,63 @@ export class StorageService {
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);
         });
+    }
+}
+
+// =============================================================================
+// Singleton Instance
+// =============================================================================
+
+let _storageServiceInstance: StorageServiceImpl | null = null;
+
+/**
+ * Get the singleton StorageService instance.
+ * Lazy initialization on first call.
+ */
+export function getStorageService(): StorageServiceImpl {
+    if (!_storageServiceInstance) {
+        _storageServiceInstance = new StorageServiceImpl();
+    }
+    return _storageServiceInstance;
+}
+
+/**
+ * Reset the singleton instance (for testing only).
+ */
+export function resetStorageService(): void {
+    _storageServiceInstance = null;
+}
+
+// =============================================================================
+// Backward-Compatible Static Facade (Deprecated)
+// =============================================================================
+
+/**
+ * @deprecated Use getStorageService() or inject StorageServiceImpl for testing.
+ * This static facade is maintained for backward compatibility.
+ */
+export class StorageService {
+    static async init(): Promise<IDBDatabase> {
+        return getStorageService().init();
+    }
+
+    static async setItem(storeName: string, key: string, value: any): Promise<void> {
+        return getStorageService().setItem(storeName, key, value);
+    }
+
+    static async getItem(storeName: string, key: string): Promise<any> {
+        return getStorageService().getItem(storeName, key);
+    }
+
+    static async getAll(storeName: string): Promise<any[]> {
+        return getStorageService().getAll(storeName);
+    }
+
+    static async deleteItem(storeName: string, key: string): Promise<void> {
+        return getStorageService().deleteItem(storeName, key);
+    }
+
+    static async clear(storeName: string): Promise<void> {
+        return getStorageService().clear(storeName);
     }
 }
