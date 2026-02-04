@@ -989,7 +989,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                   <div className="p-2 bg-white dark:bg-slate-700 rounded-full shadow-sm group-hover:scale-110 transition-transform">
                     <Database className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider">{t('settings.import', 'Import')}</span>
+                  <span className="text-[10px] font-bold tracking-wider">{t('settings.import', 'Import')}</span>
                 </button>
 
                 <button
@@ -999,7 +999,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                   <div className="p-2 bg-white dark:bg-slate-700 rounded-full shadow-sm group-hover:scale-110 transition-transform">
                     <FileText className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider">{t('settings.export', 'Export')}</span>
+                  <span className="text-[10px] font-bold tracking-wider">{t('settings.export', 'Export')}</span>
                 </button>
               </div>
 
@@ -1013,7 +1013,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                   </div>
                   <span className="text-xs font-bold text-slate-600 dark:text-slate-300 group-hover:text-rose-600 dark:group-hover:text-rose-400">{t('settings.clear_cache', 'Clear App Cache')}</span>
                 </div>
-                <span className="text-[9px] font-black text-rose-300 group-hover:text-rose-500 uppercase tracking-widest">{t('common.clear', 'Clean')}</span>
+                <span className="text-[9px] font-black uppercase text-rose-300 group-hover:text-rose-500 tracking-widest">{t('common.clear', 'Clean')}</span>
               </button>
               {cacheMessage && (
                 <p className="text-[10px] font-bold text-center text-emerald-500 uppercase tracking-widest animate-in fade-in slide-in-from-bottom-1">
@@ -1031,7 +1031,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                   <Info className="w-5 h-5" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-xs font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">{t('about.title', 'About')}</h3>
+                  <h3 className="text-xs font-black tracking-widest text-slate-700 dark:text-slate-200">{t('about.title', 'About')}</h3>
                   <p className="text-[10px] font-bold text-slate-400 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors mt-0.5">v{appVersion}</p>
                 </div>
               </div>

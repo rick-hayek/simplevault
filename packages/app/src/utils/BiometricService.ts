@@ -2,7 +2,6 @@ import { Capacitor } from '@capacitor/core';
 import { NativeBiometric } from '@capgo/capacitor-native-biometric';
 import i18next from '../i18n';
 
-// Electron API Interface (from preload)
 // Electron API Interface (from preload) - moved to global types
 
 export class BiometricService {

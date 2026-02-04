@@ -8,10 +8,6 @@ export const MobileFileService = {
      * Export content to a file.
      * User requested to stop using Share and use manual directory picking.
      */
-    /**
-     * Export content to a file.
-     * User requested to stop using Share and use manual directory picking.
-     */
     async exportFile(filename: string, content: string): Promise<boolean> {
         if (!Capacitor.isNativePlatform()) {
             return false;
