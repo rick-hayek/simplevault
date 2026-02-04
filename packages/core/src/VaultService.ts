@@ -1,34 +1,46 @@
-import { PasswordEntry, Category, VaultStorageItem } from './types';
-import { CryptoService } from './CryptoService';
-import { AuthService } from './AuthService';
-import { StorageService } from './StorageService';
+import { PasswordEntry, VaultStorageItem } from './types';
+import { CryptoService, getCryptoService } from './CryptoService';
+import { AuthService, getAuthService } from './AuthService';
+import { StorageService, getStorageService } from './StorageService';
 import { SecurityService } from './SecurityService';
 import { CloudService } from './services/cloud/CloudService';
+import type { ICryptoService, IStorageService, IAuthService, ISecurityService, ICloudService, IVaultService } from './interfaces';
 
-export class VaultService {
-    private static entries: PasswordEntry[] = [];
+/**
+ * Instance-based VaultService implementation.
+ * Use getVaultService() singleton for production, or instantiate directly for testing.
+ */
+export class VaultServiceImpl implements IVaultService {
+    private entries: PasswordEntry[] = [];
 
-    static async setInitialEntries(entries: PasswordEntry[]) {
+    constructor(
+        private cryptoService: ICryptoService,
+        private storageService: IStorageService,
+        private authServiceGetter: () => IAuthService,
+        private securityService?: ISecurityService,
+        private cloudService?: ICloudService
+    ) { }
+
+    async setInitialEntries(entries: PasswordEntry[]): Promise<void> {
         this.entries = entries;
     }
 
-    static async getEncryptedEntries(): Promise<VaultStorageItem[]> {
-        return StorageService.getAll('vault');
+    async getEncryptedEntries(): Promise<VaultStorageItem[]> {
+        return this.storageService.getAll('vault');
     }
 
-    static async getEntries(): Promise<PasswordEntry[]> {
+    async getEntries(): Promise<PasswordEntry[]> {
         if (this.entries.length > 0) return [...this.entries];
 
-        const key = AuthService.getMasterKey();
-        const encryptedEntries = await StorageService.getAll('vault');
+        const key = this.authServiceGetter().getMasterKey();
+        const encryptedEntries = await this.storageService.getAll('vault');
 
         const decryptedEntries = encryptedEntries.map(e => {
             try {
                 if (!e.payload || !e.nonce) return null;
-                const decryptedData = CryptoService.decrypt(e.payload, e.nonce, key);
+                const decryptedData = this.cryptoService.decrypt(e.payload, e.nonce, key);
                 return { ...e, ...JSON.parse(decryptedData) };
             } catch (err) {
-                // This is expected for items encrypted with an old Master Password
                 console.warn(`[VaultService] Skipping entry ${e.id}: Decryption failed (Key mismatch)`);
                 return null;
             }
@@ -39,8 +51,8 @@ export class VaultService {
         return [...this.entries];
     }
 
-    static async addEntry(entry: Omit<PasswordEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<PasswordEntry> {
-        const key = AuthService.getMasterKey();
+    async addEntry(entry: Omit<PasswordEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<PasswordEntry> {
+        const key = this.authServiceGetter().getMasterKey();
         const id = crypto.randomUUID();
         const newEntry: PasswordEntry = {
             ...entry,
@@ -48,10 +60,11 @@ export class VaultService {
             createdAt: Date.now(),
             updatedAt: Date.now(),
             favorite: entry.favorite || false,
-            strength: entry.password ? SecurityService.calculateStrength(entry.password) : 'Weak'
+            strength: entry.password && this.securityService
+                ? this.securityService.calculateStrength(entry.password)
+                : 'Weak'
         };
 
-        // Encrypt sensitive fields (everything except ID and metadata for filtering)
         const sensitiveFields = {
             title: newEntry.title,
             username: newEntry.username,
@@ -63,36 +76,38 @@ export class VaultService {
             tags: newEntry.tags
         };
 
-        const { ciphertext, nonce } = CryptoService.encrypt(JSON.stringify(sensitiveFields), key);
+        const { ciphertext, nonce } = this.cryptoService.encrypt(JSON.stringify(sensitiveFields), key);
 
-        const storageItem = {
+        const storageItem: VaultStorageItem = {
             id,
             payload: ciphertext,
             nonce,
-            category: newEntry.category, // Stored unencrypted for fast filtering? Optional.
+            category: newEntry.category,
             createdAt: newEntry.createdAt,
             updatedAt: newEntry.updatedAt,
             favorite: newEntry.favorite,
             icon: newEntry.icon
         };
 
-        await StorageService.setItem('vault', id, storageItem);
+        await this.storageService.setItem('vault', id, storageItem);
         this.entries = [newEntry, ...this.entries];
 
         // Sync to Cloud (Background)
-        CloudService.uploadEntry(storageItem as any).catch((e: Error) => console.error('Cloud Sync Failed:', e));
+        if (this.cloudService) {
+            this.cloudService.uploadEntry(storageItem).catch((e: Error) => console.error('Cloud Sync Failed:', e));
+        }
 
         return newEntry;
     }
 
-    static async updateEntry(id: string, updates: Partial<PasswordEntry>): Promise<PasswordEntry> {
-        const key = AuthService.getMasterKey();
+    async updateEntry(id: string, updates: Partial<PasswordEntry>): Promise<PasswordEntry> {
+        const key = this.authServiceGetter().getMasterKey();
         const existing = this.entries.find(e => e.id === id);
         if (!existing) throw new Error('Entry not found');
 
         const updated = { ...existing, ...updates, updatedAt: Date.now() };
-        if (updates.password) {
-            updated.strength = SecurityService.calculateStrength(updates.password);
+        if (updates.password && this.securityService) {
+            updated.strength = this.securityService.calculateStrength(updates.password);
         }
 
         const sensitiveFields = {
@@ -106,9 +121,9 @@ export class VaultService {
             tags: updated.tags
         };
 
-        const { ciphertext, nonce } = CryptoService.encrypt(JSON.stringify(sensitiveFields), key);
+        const { ciphertext, nonce } = this.cryptoService.encrypt(JSON.stringify(sensitiveFields), key);
 
-        const storageItem = {
+        const storageItem: VaultStorageItem = {
             id,
             payload: ciphertext,
             nonce,
@@ -119,36 +134,40 @@ export class VaultService {
             icon: updated.icon
         };
 
-        await StorageService.setItem('vault', id, storageItem);
+        await this.storageService.setItem('vault', id, storageItem);
         this.entries = this.entries.map(e => e.id === id ? updated : e);
 
         // Sync to Cloud (Background)
-        CloudService.uploadEntry(storageItem as any).catch((e: Error) => console.error('Cloud Sync Failed:', e));
+        if (this.cloudService) {
+            this.cloudService.uploadEntry(storageItem).catch((e: Error) => console.error('Cloud Sync Failed:', e));
+        }
 
         return updated;
     }
 
-    static async deleteEntry(id: string): Promise<void> {
-        await StorageService.deleteItem('vault', id);
+    async deleteEntry(id: string): Promise<void> {
+        await this.storageService.deleteItem('vault', id);
         this.entries = this.entries.filter(e => e.id !== id);
 
         // Sync to Cloud (Background)
-        CloudService.deleteEntry(id).catch(e => console.error('Cloud Sync Failed:', e));
+        if (this.cloudService) {
+            this.cloudService.deleteEntry(id).catch(e => console.error('Cloud Sync Failed:', e));
+        }
     }
 
-    static async exportVault(key: Uint8Array): Promise<string> {
+    async exportVault(key: Uint8Array): Promise<string> {
         const data = JSON.stringify(this.entries);
-        const encrypted = CryptoService.encrypt(data, key);
+        const encrypted = this.cryptoService.encrypt(data, key);
         return JSON.stringify(encrypted);
     }
 
-    static async importVault(encryptedJson: string, key: Uint8Array): Promise<void> {
+    async importVault(encryptedJson: string, key: Uint8Array): Promise<void> {
         const { ciphertext, nonce } = JSON.parse(encryptedJson);
-        const decrypted = CryptoService.decrypt(ciphertext, nonce, key);
+        const decrypted = this.cryptoService.decrypt(ciphertext, nonce, key);
         this.entries = JSON.parse(decrypted);
     }
 
-    static async reencryptVault(newKey: Uint8Array): Promise<void> {
+    async reencryptVault(newKey: Uint8Array): Promise<void> {
         const entries = await this.getEntries();
 
         const updates = entries.map(async (entry) => {
@@ -163,7 +182,7 @@ export class VaultService {
                 tags: entry.tags
             };
 
-            const { ciphertext, nonce } = CryptoService.encrypt(JSON.stringify(sensitiveFields), newKey);
+            const { ciphertext, nonce } = this.cryptoService.encrypt(JSON.stringify(sensitiveFields), newKey);
 
             const storageItem = {
                 id: entry.id,
@@ -175,22 +194,22 @@ export class VaultService {
                 favorite: entry.favorite
             };
 
-            await StorageService.setItem('vault', entry.id, storageItem);
+            await this.storageService.setItem('vault', entry.id, storageItem);
         });
 
         await Promise.all(updates);
     }
-    static async processCloudEntries(items: VaultStorageItem[]): Promise<void> {
+
+    async processCloudEntries(items: VaultStorageItem[]): Promise<void> {
         if (items.length === 0) return;
         console.log(`[VaultService] Processing ${items.length} incoming cloud entries...`);
 
-        const key = AuthService.getMasterKey();
+        const key = this.authServiceGetter().getMasterKey();
         const savePromises: Promise<void>[] = [];
         let successCount = 0;
         let failCount = 0;
 
         for (const item of items) {
-            // Fix #5: Try to decrypt FIRST before saving
             try {
                 if (!item.payload || !item.nonce) {
                     console.warn(`[VaultService] Item ${item.id} missing payload/nonce - skipping`);
@@ -198,13 +217,11 @@ export class VaultService {
                     continue;
                 }
 
-                const decryptedData = CryptoService.decrypt(item.payload, item.nonce, key);
+                const decryptedData = this.cryptoService.decrypt(item.payload, item.nonce, key);
                 const decryptedEntry = { ...item, ...JSON.parse(decryptedData) };
 
-                // Only save to storage AFTER successful decryption
-                savePromises.push(StorageService.setItem('vault', item.id, item));
+                savePromises.push(this.storageService.setItem('vault', item.id, item));
 
-                // Update in-memory cache
                 const index = this.entries.findIndex(e => e.id === item.id);
                 if (index !== -1) {
                     this.entries[index] = decryptedEntry;
@@ -213,7 +230,6 @@ export class VaultService {
                 }
                 successCount++;
             } catch (e) {
-                // Do NOT save to storage - this entry cannot be decrypted
                 console.error(`[VaultService] Failed to decrypt cloud entry ${item.id}. Skipping save.`);
                 failCount++;
             }
@@ -222,24 +238,14 @@ export class VaultService {
         await Promise.all(savePromises);
         console.log(`[VaultService] Cloud Import Result: ${successCount} saved, ${failCount} skipped (decryption failed).`);
 
-        // Sort by createdAt desc
         this.entries.sort((a, b) => b.createdAt - a.createdAt);
     }
 
-    /**
-     * Merge cloud entries encrypted with a different key.
-     * Decrypts with cloudKey, re-encrypts with local key, and adds to vault.
-     * Used during conflict resolution "Merge" option.
-     * 
-     * @param cloudEntries - Encrypted entries from cloud
-     * @param cloudKey - Key derived from cloud password + cloud salt
-     * @returns Number of successfully merged entries
-     */
-    static async mergeCloudEntries(
+    async mergeCloudEntries(
         cloudEntries: VaultStorageItem[],
         cloudKey: Uint8Array
     ): Promise<number> {
-        const localKey = AuthService.getMasterKey();
+        const localKey = this.authServiceGetter().getMasterKey();
         let mergedCount = 0;
 
         for (const item of cloudEntries) {
@@ -249,27 +255,22 @@ export class VaultService {
                     continue;
                 }
 
-                // 1. Decrypt with cloud key
-                const decryptedData = CryptoService.decrypt(item.payload, item.nonce, cloudKey);
+                const decryptedData = this.cryptoService.decrypt(item.payload, item.nonce, cloudKey);
                 const decryptedFields = JSON.parse(decryptedData);
 
-                // 2. Check if entry already exists locally
                 const existingIndex = this.entries.findIndex(e => e.id === item.id);
                 if (existingIndex !== -1) {
-                    // Skip if local entry is newer
                     if (this.entries[existingIndex].updatedAt >= item.updatedAt) {
                         console.log(`[VaultService] Merge: Skipping ${item.id} - local is newer`);
                         continue;
                     }
                 }
 
-                // 3. Re-encrypt with local key
-                const { ciphertext, nonce } = CryptoService.encrypt(
+                const { ciphertext, nonce } = this.cryptoService.encrypt(
                     JSON.stringify(decryptedFields),
                     localKey
                 );
 
-                // 4. Create new storage item
                 const newStorageItem: VaultStorageItem = {
                     id: item.id,
                     payload: ciphertext,
@@ -281,10 +282,8 @@ export class VaultService {
                     icon: item.icon
                 };
 
-                // 5. Save to storage
-                await StorageService.setItem('vault', item.id, newStorageItem);
+                await this.storageService.setItem('vault', item.id, newStorageItem);
 
-                // 6. Update in-memory cache
                 const fullEntry = { ...newStorageItem, ...decryptedFields };
                 if (existingIndex !== -1) {
                     this.entries[existingIndex] = fullEntry;
@@ -298,19 +297,111 @@ export class VaultService {
             }
         }
 
-        // Sort by createdAt desc
         this.entries.sort((a, b) => b.createdAt - a.createdAt);
 
         console.log(`[VaultService] Merge complete: ${mergedCount}/${cloudEntries.length} entries merged.`);
         return mergedCount;
     }
 
-    /**
-     * Clear all local vault data (for "Use Cloud" conflict resolution).
-     */
-    static async clearLocalVault(): Promise<void> {
-        await StorageService.clear('vault');
+    async clearLocalVault(): Promise<void> {
+        await this.storageService.clear('vault');
         this.entries = [];
         console.log('[VaultService] Local vault cleared.');
+    }
+}
+
+// =============================================================================
+// Singleton Instance
+// =============================================================================
+
+let _vaultServiceInstance: VaultServiceImpl | null = null;
+
+/**
+ * Get the singleton VaultService instance.
+ * Lazy initialization on first call.
+ */
+export function getVaultService(): VaultServiceImpl {
+    if (!_vaultServiceInstance) {
+        // Adapt static SecurityService to ISecurityService interface
+        const securityAdapter: ISecurityService = {
+            calculateStrength: (password: string) => SecurityService.calculateStrength(password)
+        };
+
+        _vaultServiceInstance = new VaultServiceImpl(
+            getCryptoService(),
+            getStorageService(),
+            () => getAuthService(),
+            securityAdapter,
+            CloudService
+        );
+    }
+    return _vaultServiceInstance;
+}
+
+/**
+ * Reset the singleton instance (for testing only).
+ */
+export function resetVaultService(): void {
+    _vaultServiceInstance = null;
+}
+
+// =============================================================================
+// Backward-Compatible Static Facade (Deprecated)
+// =============================================================================
+
+/**
+ * @deprecated Use getVaultService() or inject VaultServiceImpl for testing.
+ * This static facade is maintained for backward compatibility.
+ */
+export class VaultService {
+    static async setInitialEntries(entries: PasswordEntry[]): Promise<void> {
+        return getVaultService().setInitialEntries(entries);
+    }
+
+    static async getEncryptedEntries(): Promise<VaultStorageItem[]> {
+        return getVaultService().getEncryptedEntries();
+    }
+
+    static async getEntries(): Promise<PasswordEntry[]> {
+        return getVaultService().getEntries();
+    }
+
+    static async addEntry(entry: Omit<PasswordEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<PasswordEntry> {
+        return getVaultService().addEntry(entry);
+    }
+
+    static async updateEntry(id: string, updates: Partial<PasswordEntry>): Promise<PasswordEntry> {
+        return getVaultService().updateEntry(id, updates);
+    }
+
+    static async deleteEntry(id: string): Promise<void> {
+        return getVaultService().deleteEntry(id);
+    }
+
+    static async exportVault(key: Uint8Array): Promise<string> {
+        return getVaultService().exportVault(key);
+    }
+
+    static async importVault(encryptedJson: string, key: Uint8Array): Promise<void> {
+        return getVaultService().importVault(encryptedJson, key);
+    }
+
+    static async reencryptVault(newKey: Uint8Array): Promise<void> {
+        return getVaultService().reencryptVault(newKey);
+    }
+
+    static async processCloudEntries(items: VaultStorageItem[]): Promise<void> {
+        return getVaultService().processCloudEntries(items);
+    }
+
+    static async mergeCloudEntries(
+        cloudEntries: VaultStorageItem[],
+        cloudKey: Uint8Array
+    ): Promise<number> {
+        return getVaultService().mergeCloudEntries(cloudEntries, cloudKey);
+    }
+
+    static async clearLocalVault(): Promise<void> {
+        return getVaultService().clearLocalVault();
     }
 }
