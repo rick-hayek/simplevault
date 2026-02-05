@@ -206,6 +206,7 @@
         "alerts": {
             "title": "安全警报",
             "action_items": "个待处理项",
+            "empty_title": "一切正常",
             "empty": "未发现安全问题。干得漂亮！",
             "resolve": "解决",
             "weak_title": "弱密码: {{title}}",

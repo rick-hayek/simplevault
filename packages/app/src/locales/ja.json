@@ -206,6 +206,7 @@
         "alerts": {
             "title": "セキュリティアラート",
             "action_items": "アクションアイテム",
+            "empty_title": "異常なし",
             "empty": "セキュリティの問題は見つかりませんでした。素晴らしい！",
             "resolve": "解決",
             "weak_title": "弱いパスワード: {{title}}",

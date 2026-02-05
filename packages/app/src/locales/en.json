@@ -206,6 +206,7 @@
         "alerts": {
             "title": "Security Alerts",
             "action_items": "Action Items",
+            "empty_title": "All Clear",
             "empty": "No security issues found. Great job!",
             "resolve": "Resolve",
             "weak_title": "Weak Password: {{title}}",

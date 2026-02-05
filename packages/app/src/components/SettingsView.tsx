@@ -944,17 +944,25 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, setSetting
                   setSettings({ ...settings, theme: next });
                 }}
               />
-              <CompactSetting
-                icon={Languages}
-                label={t('settings.option.language')}
-                value={i18n.language === 'zh' ? '中文' : (i18n.language === 'ja' ? '日本語' : 'ENGLISH')}
-                type="value"
-                onClick={() => {
-                  const current = i18n.language;
-                  const next = current === 'en' ? 'zh' : (current === 'zh' ? 'ja' : 'en');
-                  i18n.changeLanguage(next);
-                }}
-              />
+              {/* Language Selector */}
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl flex items-center justify-between group">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg text-slate-400 group-hover:text-indigo-500 transition-colors">
+                    <Languages className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 tracking-tight">{t('settings.option.language')}</span>
+                </div>
+                <select
+                  value={i18n.language}
+                  onChange={(e) => i18n.changeLanguage(e.target.value)}
+                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase rounded-lg py-1 px-2 outline-none focus:border-indigo-500 transition-all cursor-pointer"
+                >
+                  <option value="en">English</option>
+                  <option value="zh">中文</option>
+                  <option value="ja">日本語</option>
+                  <option value="ko">한국어</option>
+                </select>
+              </div>
 
               {/* Master Log Settings */}
               <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl flex items-center justify-between group">
