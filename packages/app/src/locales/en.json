@@ -259,7 +259,7 @@
     "sync": {
         "just_now": "Just now",
         "syncing": "Syncing...",
-        "credentials_imported": "Cloud vault found. Please log in again with your original password.",
+        "credentials_imported": "Cloud vault found. Please log in with the password from your original device (this may be the same password).",
         "merge_complete": "Successfully merged entries from cloud.",
         "use_cloud_complete": "Switched to cloud vault. Please log in again with your cloud password.",
         "use_local_complete": "Cloud has been overwritten with local data.",
@@ -273,18 +273,21 @@
         },
         "conflict": {
             "title": "Sync Conflict Detected",
-            "description": "Your local vault uses a different encryption key than the cloud vault.",
+            "description": "This device was set up independently from the cloud vault. Both may use the same password, but with different encryption keys.",
             "local_count": "Local: {{count}} entries",
             "merge": "Merge Vaults",
-            "merge_desc": "Combine both vaults. Requires your CLOUD password.",
+            "merge_desc": "Combine both vaults. Uses your original password.",
             "use_cloud": "Use Cloud Only",
-            "use_cloud_desc": "Clear local data. Use CLOUD password permanently.",
+            "use_cloud_desc": "Clear local data. Switch to cloud vault.",
             "use_local": "Use Local",
-            "use_local_desc": "Overwrite cloud. Keep LOCAL password.",
-            "enter_cloud_password": "Enter your CLOUD password to decrypt and merge entries:",
-            "cloud_password_placeholder": "Cloud Master Password",
+            "use_local_desc": "Overwrite cloud with local data.",
+            "enter_cloud_password": "Enter the password from your original device to decrypt and merge entries:",
+            "enter_cloud_password_verify": "Enter the password from your original device to verify access:",
+            "cloud_password_placeholder": "Original Master Password",
+            "password_hint": "This may be the same password you use on this device.",
             "merging": "Merging...",
-            "merge_now": "Merge Now"
+            "merge_now": "Merge Now",
+            "use_cloud_now": "Switch to Cloud"
         }
     },
     "biometric_prompt": {

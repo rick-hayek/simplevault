@@ -259,7 +259,7 @@
     "sync": {
         "just_now": "刚刚",
         "syncing": "同步中...",
-        "credentials_imported": "发现云端密码库。请使用您的原始密码重新登录。",
+        "credentials_imported": "发现云端密码库。请使用原设备的密码登录（这可能与您当前密码相同）。",
         "merge_complete": "成功合并云端条目。",
         "use_cloud_complete": "已切换至云端密码库。请使用您的云端密码重新登录。",
         "use_local_complete": "云端数据已被本地数据覆盖。",
@@ -273,18 +273,21 @@
         },
         "conflict": {
             "title": "检测到同步冲突",
-            "description": "您的本地密码库使用的加密密钥与云端不同。",
+            "description": "此设备与云端密码库是分别设置的。两者可能使用相同的密码，但加密密钥不同。",
             "local_count": "本地：{{count}} 条记录",
             "merge": "合并密码库",
-            "merge_desc": "合并两个密码库。需要您的云端密码。",
+            "merge_desc": "合并两个密码库。使用原设备的密码。",
             "use_cloud": "仅使用云端",
-            "use_cloud_desc": "清除本地数据。永久使用云端密码。",
+            "use_cloud_desc": "清除本地数据。切换到云端密码库。",
             "use_local": "仅使用本地",
-            "use_local_desc": "覆盖云端数据。保留本地密码。",
-            "enter_cloud_password": "输入您的云端密码以解密并合并条目：",
-            "cloud_password_placeholder": "云端主密码",
+            "use_local_desc": "用本地数据覆盖云端。",
+            "enter_cloud_password": "输入原设备的密码以解密并合并条目：",
+            "enter_cloud_password_verify": "输入原设备的密码以验证访问权限：",
+            "cloud_password_placeholder": "原设备主密码",
+            "password_hint": "这可能与您在此设备上使用的密码相同。",
             "merging": "合并中...",
-            "merge_now": "立即合并"
+            "merge_now": "立即合并",
+            "use_cloud_now": "切换到云端"
         }
     },
     "biometric_prompt": {

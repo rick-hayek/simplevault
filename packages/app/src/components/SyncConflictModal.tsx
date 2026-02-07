@@ -25,7 +25,8 @@ export const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
     if (!isOpen) return null;
 
     const handleOptionClick = (option: ConflictResolution) => {
-        if (option === 'merge') {
+        if (option === 'merge' || option === 'use_cloud') {
+            // Both merge and use_cloud require cloud password verification
             setSelectedOption(option);
             setShowPasswordInput(true);
         } else if (option === 'cancel') {
@@ -41,8 +42,9 @@ export const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
 
         setLoading(true);
         try {
-            if (selectedOption === 'merge') {
-                await onResolve('merge', cloudPassword);
+            if (selectedOption === 'merge' || selectedOption === 'use_cloud') {
+                // Both options require cloud password for verification
+                await onResolve(selectedOption, cloudPassword);
             } else {
                 await onResolve(selectedOption);
             }
@@ -175,11 +177,19 @@ export const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
                             </div>
                         </div>
                     ) : (
-                        /* Password Input for Merge */
+                        /* Password Input for Merge or Use Cloud */
                         <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
-                                <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">
-                                    {t('sync.conflict.enter_cloud_password', 'Enter your CLOUD password to decrypt and merge entries:')}
+                            <div className={`p-4 rounded-xl border ${selectedOption === 'merge'
+                                ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800'
+                                : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                                }`}>
+                                <p className={`text-sm font-medium ${selectedOption === 'merge'
+                                    ? 'text-emerald-700 dark:text-emerald-300'
+                                    : 'text-blue-700 dark:text-blue-300'
+                                    }`}>
+                                    {selectedOption === 'merge'
+                                        ? t('sync.conflict.enter_cloud_password', 'Enter your CLOUD password to decrypt and merge entries:')
+                                        : t('sync.conflict.enter_cloud_password_verify', 'Enter your CLOUD password to verify access before switching:')}
                                 </p>
                             </div>
 
@@ -193,9 +203,14 @@ export const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
                                     }
                                 }}
                                 placeholder={t('sync.conflict.cloud_password_placeholder', 'Cloud Master Password')}
-                                className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                className={`w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 ${selectedOption === 'merge' ? 'focus:ring-emerald-500' : 'focus:ring-blue-500'
+                                    }`}
                                 autoFocus
                             />
+                            <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
+                                {t('sync.conflict.password_hint', 'This may be the same password you use on this device.')}
+                            </p>
+
 
                             <div className="flex gap-3">
                                 <button
@@ -207,9 +222,16 @@ export const SyncConflictModal: React.FC<SyncConflictModalProps> = ({
                                 <button
                                     onClick={handleConfirm}
                                     disabled={loading || !cloudPassword}
-                                    className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition-all active:scale-95 disabled:opacity-50"
+                                    className={`flex-1 py-3 text-white text-[10px] font-black rounded-xl hover:shadow-lg transition-all active:scale-95 disabled:opacity-50 ${selectedOption === 'merge'
+                                        ? 'bg-emerald-500 hover:bg-emerald-600 hover:shadow-emerald-500/20'
+                                        : 'bg-blue-500 hover:bg-blue-600 hover:shadow-blue-500/20'
+                                        }`}
                                 >
-                                    {loading ? t('sync.conflict.merging', 'Merging...') : t('sync.conflict.merge_now', 'Merge Now')}
+                                    {loading
+                                        ? t('common.processing', 'Processing...')
+                                        : selectedOption === 'merge'
+                                            ? t('sync.conflict.merge_now', 'Merge Now')
+                                            : t('sync.conflict.use_cloud_now', 'Switch to Cloud')}
                                 </button>
                             </div>
                         </div>
